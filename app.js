@@ -12,6 +12,8 @@
 const EONET_BASE   = 'https://eonet.gsfc.nasa.gov/api/v3';
 const NOMINATIM    = 'https://nominatim.openstreetmap.org/search';
 const CACHE_TTL_MS = 3 * 60 * 1000; // 3 minutes
+const MAX_RETRIES  = 3;
+const RETRY_DELAY  = 1500; // ms base delay (doubles each retry)
 
 const CATEGORY_META = {
   wildfires:       { icon:'🔥', color:'#ff6b35', label:'Wildfires',        desc:'Uncontrolled fires that burn in wildland vegetation.' },
@@ -26,6 +28,7 @@ const CATEGORY_META = {
   mangroves:       { icon:'🌿', color:'#4caf50', label:'Mangroves',         desc:'Changes in mangrove forest coverage.' },
   waterColor:      { icon:'💧', color:'#00bcd4', label:'Water Color',       desc:'Unusual changes in water body color, often from algae.' },
   tempExtremes:    { icon:'🌡️', color:'#e91e63', label:'Temp Extremes',    desc:'Extreme temperature events, both hot and cold.' },
+  default:         { icon:'🌐', color:'#8b949e', label:'Other',             desc:'Other natural events tracked by NASA EONET.' },
 };
 
 const LEARN_DATA = {
@@ -93,6 +96,40 @@ const LEARN_DATA = {
     links:[ {label:'AirNow AQI',url:'https://www.airnow.gov/'},{label:'NASA MODIS',url:'https://worldview.earthdata.nasa.gov/'} ]
   },
 };
+
+/* ============================================================
+   0b. FALLBACK DATA (shown when NASA EONET is unreachable)
+   ============================================================ */
+const FALLBACK_CATEGORIES = [
+  { id:'wildfires',     title:'Wildfires' },
+  { id:'severeStorms',  title:'Severe Storms' },
+  { id:'floods',        title:'Floods' },
+  { id:'volcanoes',     title:'Volcanoes' },
+  { id:'earthquakes',   title:'Earthquakes' },
+  { id:'seaAndLakeIce', title:'Sea & Lake Ice' },
+  { id:'landslides',    title:'Landslides' },
+  { id:'drought',       title:'Drought' },
+  { id:'dustHaze',      title:'Dust & Haze' },
+];
+
+// Representative real-world events as static fallback
+const FALLBACK_EVENTS = [
+  { id:'EONET_6471', title:'Sawmill Fire, Arizona', description:'Active wildfire burning in Cochise County, Arizona.', closed:null, link:'https://eonet.gsfc.nasa.gov/api/v3/events/EONET_6471', categories:[{id:'wildfires',title:'Wildfires'}], sources:[{id:'InciWeb',url:'https://inciweb.nwcg.gov/'}], geometry:[{date:'2024-06-15T00:00:00Z',type:'Point',coordinates:[-110.0,31.7],magnitudeValue:null,magnitudeUnit:null}] },
+  { id:'EONET_6210', title:'Tropical Storm Alberto', description:'Category 1 tropical storm in the Gulf of Mexico.', closed:null, link:'https://eonet.gsfc.nasa.gov/api/v3/events/EONET_6210', categories:[{id:'severeStorms',title:'Severe Storms'}], sources:[{id:'NHC',url:'https://www.nhc.noaa.gov/'}], geometry:[{date:'2024-06-20T00:00:00Z',type:'Point',coordinates:[-96.0,24.5],magnitudeValue:65,magnitudeUnit:'kts'}] },
+  { id:'EONET_6350', title:'Mayon Volcano Eruption', description:'Ongoing eruption with lava flow on Luzon Island, Philippines.', closed:null, link:'https://eonet.gsfc.nasa.gov/api/v3/events/EONET_6350', categories:[{id:'volcanoes',title:'Volcanoes'}], sources:[{id:'PHIVOLCS',url:'https://www.phivolcs.dost.gov.ph/'}], geometry:[{date:'2024-06-18T00:00:00Z',type:'Point',coordinates:[123.685,13.257],magnitudeValue:null,magnitudeUnit:null}] },
+  { id:'EONET_6400', title:'Bangladesh Monsoon Floods', description:'Severe flooding affecting millions in Sylhet and Sunamganj districts.', closed:null, link:'https://eonet.gsfc.nasa.gov/api/v3/events/EONET_6400', categories:[{id:'floods',title:'Floods'}], sources:[{id:'FloodList',url:'https://floodlist.com/'}], geometry:[{date:'2024-06-22T00:00:00Z',type:'Point',coordinates:[91.8,24.9],magnitudeValue:null,magnitudeUnit:null}] },
+  { id:'EONET_6380', title:'Greece Wildfire Complex', description:'Multiple wildfires burning near Athens, driven by strong Meltemi winds.', closed:'2024-06-10T00:00:00Z', link:'https://eonet.gsfc.nasa.gov/api/v3/events/EONET_6380', categories:[{id:'wildfires',title:'Wildfires'}], sources:[{id:'EFFIS',url:'https://effis.jrc.ec.europa.eu/'}], geometry:[{date:'2024-06-08T00:00:00Z',type:'Point',coordinates:[23.7,37.9],magnitudeValue:null,magnitudeUnit:null}] },
+  { id:'EONET_6450', title:'Arctic Sea Ice Minimum', description:'Sea ice extent in the Beaufort Sea below seasonal average by 18%.', closed:null, link:'https://eonet.gsfc.nasa.gov/api/v3/events/EONET_6450', categories:[{id:'seaAndLakeIce',title:'Sea & Lake Ice'}], sources:[{id:'NSIDC',url:'https://nsidc.org/'}], geometry:[{date:'2024-06-12T00:00:00Z',type:'Point',coordinates:[-145.0,73.0],magnitudeValue:null,magnitudeUnit:null}] },
+  { id:'EONET_6460', title:'California Landslide – Big Sur', description:'Large landslide closes Highway 1 near Big Sur after heavy rain.', closed:'2024-06-05T00:00:00Z', link:'https://eonet.gsfc.nasa.gov/api/v3/events/EONET_6460', categories:[{id:'landslides',title:'Landslides'}], sources:[{id:'USGS',url:'https://www.usgs.gov/'}], geometry:[{date:'2024-06-04T00:00:00Z',type:'Point',coordinates:[-121.8,36.1],magnitudeValue:null,magnitudeUnit:null}] },
+  { id:'EONET_6420', title:'Saharan Dust Plume – Atlantic', description:'Dense dust plume from the Sahara crossing the Atlantic towards the Caribbean.', closed:null, link:'https://eonet.gsfc.nasa.gov/api/v3/events/EONET_6420', categories:[{id:'dustHaze',title:'Dust & Haze'}], sources:[{id:'NASA MODIS',url:'https://worldview.earthdata.nasa.gov/'}], geometry:[{date:'2024-06-19T00:00:00Z',type:'Point',coordinates:[-30.0,16.0],magnitudeValue:null,magnitudeUnit:null}] },
+  { id:'EONET_6430', title:'Horn of Africa Drought', description:'Severe drought conditions persist across Somalia, Ethiopia and Kenya.', closed:null, link:'https://eonet.gsfc.nasa.gov/api/v3/events/EONET_6430', categories:[{id:'drought',title:'Drought'}], sources:[{id:'FEWS NET',url:'https://fews.net/'}], geometry:[{date:'2024-06-14T00:00:00Z',type:'Point',coordinates:[42.5,6.0],magnitudeValue:null,magnitudeUnit:null}] },
+  { id:'EONET_6415', title:'Hawaii Kilauea Eruption', description:'Summit eruption at Kilauea with active lava lake. No immediate threat to communities.', closed:null, link:'https://eonet.gsfc.nasa.gov/api/v3/events/EONET_6415', categories:[{id:'volcanoes',title:'Volcanoes'}], sources:[{id:'USGS HVO',url:'https://www.usgs.gov/observatories/hvo'}], geometry:[{date:'2024-06-21T00:00:00Z',type:'Point',coordinates:[-155.286,19.421],magnitudeValue:null,magnitudeUnit:null}] },
+  { id:'EONET_6412', title:'Typhoon Gaemi – Western Pacific', description:'Super Typhoon Gaemi strengthening rapidly near the Philippines.', closed:null, link:'https://eonet.gsfc.nasa.gov/api/v3/events/EONET_6412', categories:[{id:'severeStorms',title:'Severe Storms'}], sources:[{id:'JTWC',url:'https://www.metoc.navy.mil/jtwc/'}], geometry:[{date:'2024-06-23T00:00:00Z',type:'Point',coordinates:[128.5,18.2],magnitudeValue:95,magnitudeUnit:'kts'}] },
+  { id:'EONET_6408', title:'Peru Amazon Flooding', description:'Ucayali River overflows impacting riverside communities in Ucayali Region.', closed:null, link:'https://eonet.gsfc.nasa.gov/api/v3/events/EONET_6408', categories:[{id:'floods',title:'Floods'}], sources:[{id:'FloodList',url:'https://floodlist.com/'}], geometry:[{date:'2024-06-17T00:00:00Z',type:'Point',coordinates:[-74.5,-8.4],magnitudeValue:null,magnitudeUnit:null}] },
+  { id:'EONET_6395', title:'Canada Boreal Wildfire Complex', description:'Widespread wildfires burning across Alberta and British Columbia.', closed:null, link:'https://eonet.gsfc.nasa.gov/api/v3/events/EONET_6395', categories:[{id:'wildfires',title:'Wildfires'}], sources:[{id:'CIFFC',url:'https://ciffc.ca/'}], geometry:[{date:'2024-06-20T00:00:00Z',type:'Point',coordinates:[-116.5,54.2],magnitudeValue:null,magnitudeUnit:null},{date:'2024-06-22T00:00:00Z',type:'Point',coordinates:[-116.8,54.4],magnitudeValue:null,magnitudeUnit:null}] },
+  { id:'EONET_6388', title:'Tonga Submarine Volcano', description:'Renewed activity at Hunga Tonga-Hunga Ha\'apai volcanic complex.', closed:'2024-06-01T00:00:00Z', link:'https://eonet.gsfc.nasa.gov/api/v3/events/EONET_6388', categories:[{id:'volcanoes',title:'Volcanoes'}], sources:[{id:'Smithsonian GVP',url:'https://volcano.si.edu/'}], geometry:[{date:'2024-05-28T00:00:00Z',type:'Point',coordinates:[-175.382,-20.536],magnitudeValue:null,magnitudeUnit:null}] },
+  { id:'EONET_6375', title:'India Heat Wave', description:'Extreme heat conditions across Rajasthan and Uttar Pradesh exceeding 47°C.', closed:'2024-06-12T00:00:00Z', link:'https://eonet.gsfc.nasa.gov/api/v3/events/EONET_6375', categories:[{id:'tempExtremes',title:'Temp. Extremes'}], sources:[{id:'IMD',url:'https://mausam.imd.gov.in/'}], geometry:[{date:'2024-06-05T00:00:00Z',type:'Point',coordinates:[76.0,27.0],magnitudeValue:47,magnitudeUnit:'°C'}] },
+];
 
 /* ============================================================
    1. STATE
@@ -204,14 +241,45 @@ function toast(msg, type = 'info', duration = 3000) {
 /* ============================================================
    4. API CLIENT
    ============================================================ */
-async function apiFetch(url) {
+async function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function apiFetch(url, attempt = 1) {
   const cached = State.cache[url];
   if (cached && Date.now() - cached.ts < CACHE_TTL_MS) return cached.data;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-  const data = await res.json();
-  State.cache[url] = { data, ts: Date.now() };
-  return data;
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000); // 12s timeout
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeout);
+
+    if (!res.ok) {
+      // Retry on 5xx or 429
+      if ((res.status >= 500 || res.status === 429) && attempt < MAX_RETRIES) {
+        const delay = RETRY_DELAY * Math.pow(2, attempt - 1);
+        UIModule.updateStatus(`<i class="fa fa-satellite-dish pulse"></i> NASA EONET busy (retry ${attempt}/${MAX_RETRIES})…`);
+        await sleep(delay);
+        return apiFetch(url, attempt + 1);
+      }
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    }
+    const data = await res.json();
+    State.cache[url] = { data, ts: Date.now() };
+    return data;
+  } catch (e) {
+    if (e.name === 'AbortError') {
+      if (attempt < MAX_RETRIES) {
+        await sleep(RETRY_DELAY * attempt);
+        return apiFetch(url, attempt + 1);
+      }
+      throw new Error('Request timed out after retries');
+    }
+    if (attempt < MAX_RETRIES && e.message.includes('fetch')) {
+      await sleep(RETRY_DELAY * attempt);
+      return apiFetch(url, attempt + 1);
+    }
+    throw e;
+  }
 }
 
 function buildEventsURL(params = {}) {
@@ -1016,35 +1084,93 @@ function openSnapshot() {
 async function loadData() {
   FilterModule.readFilters();
   UIModule.updateStatus('<i class="fa fa-satellite-dish pulse"></i> Fetching from NASA EONET…');
-  try {
-    // Fetch categories first (cached after first call)
-    if (!State.categories.length) {
+
+  // Try to fetch categories (use fallback if API is down)
+  if (!State.categories.length) {
+    try {
       State.categories = await fetchCategories();
+    } catch {
+      State.categories = FALLBACK_CATEGORIES;
     }
-    // Fetch events
+  }
+
+  // Try to fetch events with full retry logic
+  let usedFallback = false;
+  try {
     const events = await fetchEvents();
     State.events = events;
-    State.filteredEvents = FilterModule.applyAll(events);
+  } catch (e) {
+    console.warn('NASA EONET unreachable, using fallback data:', e.message);
+    usedFallback = true;
+    State.events = FALLBACK_EVENTS;
+  }
 
-    // Build category counts for sidebar
-    const catCounts = {};
-    State.filteredEvents.forEach(ev => ev.categories.forEach(c => { catCounts[c.id] = (catCounts[c.id]||0)+1; }));
-    UIModule.renderCategories(State.categories, catCounts);
+  State.filteredEvents = FilterModule.applyAll(State.events);
 
-    const now = new Date().toLocaleTimeString();
+  // Build category counts for sidebar
+  const catCounts = {};
+  State.filteredEvents.forEach(ev => ev.categories.forEach(c => { catCounts[c.id] = (catCounts[c.id]||0)+1; }));
+  UIModule.renderCategories(State.categories, catCounts);
+
+  const now = new Date().toLocaleTimeString();
+
+  if (usedFallback) {
+    UIModule.updateStatus(
+      `<i class="fa fa-triangle-exclamation" style="color:var(--warning)"></i> NASA EONET unavailable – showing sample data`,
+      State.filteredEvents.length,
+      now
+    );
+    // Show a dismissible banner on the map
+    showOfflineBanner();
+    toast('NASA EONET is temporarily unavailable. Showing sample events.', 'warn', 6000);
+  } else {
+    hideOfflineBanner();
     UIModule.updateStatus(
       `<i class="fa fa-circle-check" style="color:var(--success)"></i> NASA EONET connected`,
       State.filteredEvents.length,
       now
     );
-
-    renderCurrentView();
     toast(`Loaded ${State.filteredEvents.length} events`, 'success');
-  } catch(e) {
-    console.error(e);
-    UIModule.updateStatus(`<i class="fa fa-triangle-exclamation" style="color:var(--danger)"></i> API Error: ${e.message}`);
-    toast(`Failed to load: ${e.message}`, 'error', 5000);
   }
+
+  renderCurrentView();
+}
+
+function showOfflineBanner() {
+  let banner = document.getElementById('offlineBanner');
+  if (banner) return;
+  banner = document.createElement('div');
+  banner.id = 'offlineBanner';
+  banner.style.cssText = `
+    position:fixed; top:calc(var(--topbar-h) + var(--statusbar-h)); left:0; right:0; z-index:998;
+    background:#3d2e1a; border-bottom:1px solid #d29922; color:#e3b341;
+    padding:8px 16px; font-size:0.82rem;
+    display:flex; align-items:center; gap:10px;
+  `;
+  banner.innerHTML = `
+    <i class="fa fa-satellite-dish"></i>
+    <span><b>NASA EONET is temporarily unavailable</b> — displaying representative sample events. 
+    Live data will reload automatically once the API recovers.</span>
+    <button onclick="document.getElementById('offlineBanner').remove(); State.cache={}; loadData();"
+      style="margin-left:auto; background:#d29922; color:#000; border:none; border-radius:4px; padding:4px 10px; cursor:pointer; font-size:0.78rem; font-weight:600;">
+      🔄 Retry Now
+    </button>
+    <button onclick="this.parentElement.remove()"
+      style="background:none; border:none; color:#e3b341; cursor:pointer; font-size:1rem; padding:2px 6px;">✕</button>
+  `;
+  document.body.appendChild(banner);
+  // push shell down so content isn't hidden
+  document.querySelector('.app-shell').style.marginTop =
+    `calc(var(--topbar-h) + var(--statusbar-h) + 42px)`;
+  document.querySelector('.app-shell').style.height =
+    `calc(100vh - var(--topbar-h) - var(--statusbar-h) - 42px)`;
+}
+
+function hideOfflineBanner() {
+  const banner = document.getElementById('offlineBanner');
+  if (banner) banner.remove();
+  document.querySelector('.app-shell').style.marginTop = '';
+  document.querySelector('.app-shell').style.height = '';
 }
 
 function renderCurrentView() {
@@ -1245,4 +1371,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   MapModule.init();
   bindEvents();
   await loadData();
+
+  // Auto-retry every 60s if we're on fallback data
+  setInterval(() => {
+    const banner = document.getElementById('offlineBanner');
+    if (banner) {
+      // We're in fallback mode — silently try again
+      State.cache = {};
+      loadData();
+    }
+  }, 60000);
 });
