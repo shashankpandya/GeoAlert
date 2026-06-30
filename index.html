@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Global Natural Events Awareness Hub – Track wildfires, earthquakes, storms, floods and more in near real-time using NASA EONET data." />
+  <title>🌍 GeoAlert – Global Natural Events Hub</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Leaflet MarkerCluster -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- App CSS -->
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+
+<!-- ===== TOP NAV ===== -->
+<header class="topbar" role="banner">
+  <div class="topbar__brand">
+    <span class="topbar__logo" aria-hidden="true">🌍</span>
+    <span class="topbar__title">GeoAlert</span>
+    <span class="topbar__sub">Natural Events Hub</span>
+  </div>
+  <nav class="topbar__nav" role="navigation" aria-label="Main navigation">
+    <button class="nav-btn active" data-view="map"     aria-label="Map view"><i class="fa fa-map" aria-hidden="true"></i> Map</button>
+    <button class="nav-btn"        data-view="list"    aria-label="Events list"><i class="fa fa-list" aria-hidden="true"></i> Events</button>
+    <button class="nav-btn"        data-view="timeline" aria-label="Timeline"><i class="fa fa-timeline" aria-hidden="true"></i> Timeline</button>
+    <button class="nav-btn"        data-view="nearme"  aria-label="Near me"><i class="fa fa-location-dot" aria-hidden="true"></i> Near Me</button>
+    <button class="nav-btn"        data-view="learn"   aria-label="Learn"><i class="fa fa-graduation-cap" aria-hidden="true"></i> Learn</button>
+    <button class="nav-btn"        data-view="stats"   aria-label="Statistics"><i class="fa fa-chart-bar" aria-hidden="true"></i> Stats</button>
+  </nav>
+  <div class="topbar__actions">
+    <button id="btnRefresh" class="icon-btn" title="Refresh data" aria-label="Refresh data"><i class="fa fa-rotate" aria-hidden="true"></i></button>
+    <button id="btnSnapshot" class="icon-btn" title="Share snapshot" aria-label="Share snapshot"><i class="fa fa-share-nodes" aria-hidden="true"></i></button>
+    <button id="btnTheme" class="icon-btn" title="Toggle theme" aria-label="Toggle dark/light theme"><i class="fa fa-circle-half-stroke" aria-hidden="true"></i></button>
+  </div>
+</header>
+
+<!-- ===== GLOBAL STATUS BAR ===== -->
+<div class="statusbar" id="statusBar" role="status" aria-live="polite">
+  <span id="statusText"><i class="fa fa-satellite-dish pulse" aria-hidden="true"></i> Connecting to NASA EONET…</span>
+  <span id="eventCount" class="statusbar__count"></span>
+  <span id="lastUpdated" class="statusbar__time"></span>
+</div>
+
+<!-- ===== MAIN LAYOUT ===== -->
+<div class="app-shell">
+
+  <!-- ===== SIDEBAR FILTERS ===== -->
+  <aside class="sidebar" id="sidebar" role="complementary" aria-label="Filters">
+    <div class="sidebar__header">
+      <span><i class="fa fa-sliders" aria-hidden="true"></i> Filters</span>
+      <button id="btnClearFilters" class="link-btn" aria-label="Clear all filters">Clear all</button>
+    </div>
+
+    <!-- Search -->
+    <div class="filter-group">
+      <label for="searchInput" class="filter-label">Keyword Search</label>
+      <div class="search-wrap">
+        <input type="text" id="searchInput" placeholder="Search events…" autocomplete="off" aria-label="Search events by keyword" />
+        <i class="fa fa-magnifying-glass" aria-hidden="true"></i>
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div class="filter-group">
+      <label class="filter-label">Status</label>
+      <div class="radio-group" role="radiogroup" aria-label="Event status">
+        <label class="radio-label"><input type="radio" name="status" value="open" checked /> <span>Open</span></label>
+        <label class="radio-label"><input type="radio" name="status" value="closed" /> <span>Closed</span></label>
+        <label class="radio-label"><input type="radio" name="status" value="all" /> <span>All</span></label>
+      </div>
+    </div>
+
+    <!-- Time window -->
+    <div class="filter-group">
+      <label class="filter-label">Time Window</label>
+      <div class="chip-group" role="group" aria-label="Time window">
+        <button class="chip" data-days="3">3 Days</button>
+        <button class="chip active" data-days="7">7 Days</button>
+        <button class="chip" data-days="14">14 Days</button>
+        <button class="chip" data-days="30">30 Days</button>
+        <button class="chip" data-days="0">Custom</button>
+      </div>
+      <div id="customDateRange" class="custom-date" style="display:none">
+        <input type="date" id="dateStart" aria-label="Start date" />
+        <span>to</span>
+        <input type="date" id="dateEnd" aria-label="End date" />
+      </div>
+    </div>
+
+    <!-- Limit -->
+    <div class="filter-group">
+      <label for="limitSelect" class="filter-label">Max Events</label>
+      <select id="limitSelect" aria-label="Maximum number of events">
+        <option value="20">20</option>
+        <option value="50" selected>50</option>
+        <option value="100">100</option>
+        <option value="200">200</option>
+      </select>
+    </div>
+
+    <!-- Categories -->
+    <div class="filter-group">
+      <label class="filter-label">Categories</label>
+      <div id="categoryList" class="category-list" role="group" aria-label="Event categories">
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line"></div>
+      </div>
+    </div>
+
+    <!-- Map Layer -->
+    <div class="filter-group">
+      <label class="filter-label">Map Layer</label>
+      <div class="radio-group" role="radiogroup" aria-label="Map tile layer">
+        <label class="radio-label"><input type="radio" name="mapLayer" value="osm" checked /> <span>OpenStreetMap</span></label>
+        <label class="radio-label"><input type="radio" name="mapLayer" value="satellite" /> <span>Satellite</span></label>
+        <label class="radio-label"><input type="radio" name="mapLayer" value="topo" /> <span>Topographic</span></label>
+        <label class="radio-label"><input type="radio" name="mapLayer" value="dark" /> <span>Dark</span></label>
+      </div>
+    </div>
+
+    <!-- Apply -->
+    <button id="btnApply" class="btn-primary full-width" aria-label="Apply filters">
+      <i class="fa fa-filter" aria-hidden="true"></i> Apply Filters
+    </button>
+
+    <!-- NASA Attribution -->
+    <div class="attribution">
+      <img src="https://www.nasa.gov/wp-content/themes/nasa/assets/images/nasa-logo.svg" alt="NASA logo" class="nasa-logo" onerror="this.style.display='none'" />
+      Data from <a href="https://eonet.gsfc.nasa.gov/" target="_blank" rel="noopener noreferrer">NASA EONET v3</a>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN CONTENT AREA ===== -->
+  <main class="main-content" role="main">
+
+    <!-- ========= VIEW: MAP ========= -->
+    <section class="view active" id="view-map" aria-label="Map view">
+      <div id="map" role="application" aria-label="Interactive world map showing natural events"></div>
+      <div class="map-legend" id="mapLegend" aria-label="Map legend">
+        <div class="legend-title"><i class="fa fa-circle-info" aria-hidden="true"></i> Legend</div>
+        <div id="legendItems"></div>
+      </div>
+      <div class="map-controls">
+        <button id="btnFitAll" class="map-ctrl-btn" title="Fit all events" aria-label="Fit all events on map"><i class="fa fa-maximize" aria-hidden="true"></i></button>
+        <button id="btnCluster" class="map-ctrl-btn active" title="Toggle clustering" aria-label="Toggle marker clustering"><i class="fa fa-layer-group" aria-hidden="true"></i></button>
+        <button id="btnHeatmap" class="map-ctrl-btn" title="Toggle heatmap style" aria-label="Toggle heatmap"><i class="fa fa-fire" aria-hidden="true"></i></button>
+      </div>
+    </section>
+
+    <!-- ========= VIEW: EVENTS LIST ========= -->
+    <section class="view" id="view-list" aria-label="Events list view">
+      <div class="view-header">
+        <h2><i class="fa fa-list" aria-hidden="true"></i> All Events</h2>
+        <div class="sort-wrap">
+          <label for="sortSelect">Sort:</label>
+          <select id="sortSelect" aria-label="Sort events">
+            <option value="date-desc">Newest first</option>
+            <option value="date-asc">Oldest first</option>
+            <option value="title-asc">Name A–Z</option>
+            <option value="category">Category</option>
+          </select>
+        </div>
+      </div>
+      <div id="eventGrid" class="event-grid" aria-label="Event cards"></div>
+      <div id="listEmpty" class="empty-state" style="display:none">
+        <i class="fa fa-satellite fa-3x" aria-hidden="true"></i>
+        <p>No events match your filters.</p>
+      </div>
+    </section>
+
+    <!-- ========= VIEW: TIMELINE ========= -->
+    <section class="view" id="view-timeline" aria-label="Timeline view">
+      <div class="view-header">
+        <h2><i class="fa fa-timeline" aria-hidden="true"></i> Event Timeline</h2>
+      </div>
+      <div class="timeline-charts">
+        <div class="chart-card">
+          <h3>Daily Event Count</h3>
+          <canvas id="chartDaily" aria-label="Daily event count chart" role="img"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>Events by Category</h3>
+          <canvas id="chartCategory" aria-label="Events by category chart" role="img"></canvas>
+        </div>
+        <div class="chart-card wide">
+          <h3>Event Activity Heatmap (by weekday &amp; hour)</h3>
+          <canvas id="chartHeatmap" aria-label="Activity heatmap" role="img"></canvas>
+        </div>
+      </div>
+      <div class="timeline-list" id="timelineList"></div>
+    </section>
+
+    <!-- ========= VIEW: NEAR ME ========= -->
+    <section class="view" id="view-nearme" aria-label="Near me view">
+      <div class="view-header">
+        <h2><i class="fa fa-location-dot" aria-hidden="true"></i> Events Near Me</h2>
+      </div>
+      <div class="nearme-controls">
+        <button id="btnGeolocate" class="btn-primary"><i class="fa fa-crosshairs" aria-hidden="true"></i> Use My Location</button>
+        <span class="divider-or">or</span>
+        <input type="text" id="manualCity" placeholder="Enter city or coordinates (lat,lon)" aria-label="Enter city or coordinates" />
+        <button id="btnManualSearch" class="btn-secondary"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
+        <label for="radiusSelect" class="filter-label" style="margin-left:1rem">Radius:</label>
+        <select id="radiusSelect" aria-label="Search radius">
+          <option value="100">100 km</option>
+          <option value="200" selected>200 km</option>
+          <option value="500">500 km</option>
+          <option value="1000">1000 km</option>
+        </select>
+      </div>
+      <div id="nearmeStatus" class="nearme-status" aria-live="polite"></div>
+      <div class="nearme-layout">
+        <div id="nearmeMap" class="nearme-map" role="application" aria-label="Map showing events near your location"></div>
+        <div id="nearmeList" class="nearme-list" aria-label="Events near your location"></div>
+      </div>
+    </section>
+
+    <!-- ========= VIEW: LEARN ========= -->
+    <section class="view" id="view-learn" aria-label="Learn view">
+      <div class="view-header">
+        <h2><i class="fa fa-graduation-cap" aria-hidden="true"></i> Learn About Natural Events</h2>
+      </div>
+      <div class="learn-intro">
+        <p>Explore each category of natural event: what causes them, how to stay safe, and what's happening right now around the world.</p>
+      </div>
+      <div id="learnGrid" class="learn-grid" aria-label="Learning categories"></div>
+      <!-- Detail modal for learn -->
+      <div id="learnModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="learnModalTitle" style="display:none">
+        <div class="modal-backdrop"></div>
+        <div class="modal-box learn-modal-box">
+          <button class="modal-close" id="learnModalClose" aria-label="Close learn modal"><i class="fa fa-times" aria-hidden="true"></i></button>
+          <div id="learnModalContent"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========= VIEW: STATS ========= -->
+    <section class="view" id="view-stats" aria-label="Statistics view">
+      <div class="view-header">
+        <h2><i class="fa fa-chart-bar" aria-hidden="true"></i> Global Statistics</h2>
+      </div>
+      <div class="stats-kpi" id="statsKpi" aria-label="Key statistics"></div>
+      <div class="stats-charts">
+        <div class="chart-card">
+          <h3>Category Distribution</h3>
+          <canvas id="chartStatsCat" aria-label="Category distribution chart" role="img"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>Status Breakdown</h3>
+          <canvas id="chartStatsStatus" aria-label="Status breakdown chart" role="img"></canvas>
+        </div>
+        <div class="chart-card wide">
+          <h3>Events Over Time (30-day trend)</h3>
+          <canvas id="chartStatsTrend" aria-label="Events over time chart" role="img"></canvas>
+        </div>
+      </div>
+      <div class="top-events" id="topEventsTable" aria-label="Top events table"></div>
+    </section>
+
+  </main>
+
+  <!-- ===== EVENT DETAIL DRAWER ===== -->
+  <div class="detail-drawer" id="detailDrawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle" aria-hidden="true">
+    <div class="drawer-header">
+      <h3 id="drawerTitle">Event Details</h3>
+      <button class="drawer-close" id="drawerClose" aria-label="Close event details"><i class="fa fa-times" aria-hidden="true"></i></button>
+    </div>
+    <div class="drawer-body" id="drawerBody"></div>
+  </div>
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+</div><!-- end app-shell -->
+
+<!-- ===== SNAPSHOT MODAL ===== -->
+<div class="modal" id="snapshotModal" role="dialog" aria-modal="true" aria-labelledby="snapshotTitle" style="display:none">
+  <div class="modal-backdrop" id="snapshotBackdrop"></div>
+  <div class="modal-box">
+    <button class="modal-close" id="snapshotClose" aria-label="Close snapshot modal"><i class="fa fa-times" aria-hidden="true"></i></button>
+    <h3 id="snapshotTitle"><i class="fa fa-share-nodes" aria-hidden="true"></i> Share Snapshot</h3>
+    <div id="snapshotContent" class="snapshot-card"></div>
+    <div class="snapshot-actions">
+      <button id="btnCopyLink" class="btn-primary"><i class="fa fa-link" aria-hidden="true"></i> Copy Link</button>
+      <button id="btnCopyText" class="btn-secondary"><i class="fa fa-copy" aria-hidden="true"></i> Copy Text</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TOAST NOTIFICATIONS ===== -->
+<div id="toastContainer" class="toast-container" aria-live="assertive" aria-atomic="true"></div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Leaflet MarkerCluster -->
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<!-- App JS -->
+<script src="app.js"></script>
+</body>
+</html>
