@@ -36,9 +36,10 @@
     <button class="nav-btn"        data-view="stats"   aria-label="Statistics"><i class="fa fa-chart-bar" aria-hidden="true"></i> Stats</button>
   </nav>
   <div class="topbar__actions">
-    <button id="btnRefresh" class="icon-btn" title="Refresh data" aria-label="Refresh data"><i class="fa fa-rotate" aria-hidden="true"></i></button>
-    <button id="btnSnapshot" class="icon-btn" title="Share snapshot" aria-label="Share snapshot"><i class="fa fa-share-nodes" aria-hidden="true"></i></button>
-    <button id="btnTheme" class="icon-btn" title="Toggle theme" aria-label="Toggle dark/light theme"><i class="fa fa-circle-half-stroke" aria-hidden="true"></i></button>
+    <button id="btnRefresh"  class="icon-btn" title="Refresh data"         aria-label="Refresh data"><i class="fa fa-rotate" aria-hidden="true"></i></button>
+    <button id="btnSnapshot" class="icon-btn" title="Share snapshot"       aria-label="Share snapshot"><i class="fa fa-share-nodes" aria-hidden="true"></i></button>
+    <button id="btnGuide"    class="icon-btn highlight-pulse" title="User Guide – How to use GeoAlert" aria-label="Open user guide"><i class="fa fa-circle-question" aria-hidden="true"></i></button>
+    <button id="btnTheme"    class="icon-btn" title="Toggle theme"         aria-label="Toggle dark/light theme"><i class="fa fa-circle-half-stroke" aria-hidden="true"></i></button>
   </div>
 </header>
 
@@ -296,6 +297,258 @@
 
 <!-- ===== TOAST NOTIFICATIONS ===== -->
 <div id="toastContainer" class="toast-container" aria-live="assertive" aria-atomic="true"></div>
+
+<!-- ===== WELCOME / ONBOARDING OVERLAY ===== -->
+<div id="welcomeOverlay" class="welcome-overlay" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
+  <div class="welcome-box">
+    <div class="welcome-hero">
+      <div class="welcome-globe">🌍</div>
+      <h1 id="welcomeTitle">Welcome to GeoAlert</h1>
+      <p class="welcome-tagline">Your real-time window into Earth's natural events — powered by NASA EONET</p>
+    </div>
+    <div class="welcome-features">
+      <div class="wf-card"><span class="wf-icon">🗺️</span><div><b>Live World Map</b><p>See every active wildfire, storm, volcano & flood plotted on an interactive map</p></div></div>
+      <div class="wf-card"><span class="wf-icon">📍</span><div><b>Near Me</b><p>Find natural events within any radius of your location</p></div></div>
+      <div class="wf-card"><span class="wf-icon">📊</span><div><b>Trends & Stats</b><p>Charts, timelines and statistics for every event category</p></div></div>
+      <div class="wf-card"><span class="wf-icon">🎓</span><div><b>Learn</b><p>Understand what each event means, safety tips, and live examples</p></div></div>
+    </div>
+    <div class="welcome-actions">
+      <button id="btnStartTour" class="btn-primary btn-lg"><i class="fa fa-play" aria-hidden="true"></i> Take a Quick Tour <span class="badge-pill">~2 min</span></button>
+      <button id="btnSkipTour"  class="btn-secondary btn-lg"><i class="fa fa-forward-fast" aria-hidden="true"></i> Skip — Jump In</button>
+    </div>
+    <label class="welcome-remember">
+      <input type="checkbox" id="chkDontShow" /> Don't show this again
+    </label>
+  </div>
+</div>
+
+<!-- ===== TOUR TOOLTIP ===== -->
+<div id="tourTooltip" class="tour-tooltip" role="tooltip" aria-live="polite" style="display:none">
+  <div class="tour-header">
+    <span id="tourStep" class="tour-step-badge">Step 1 / 8</span>
+    <button id="tourClose" class="tour-close" aria-label="Exit tour"><i class="fa fa-times"></i></button>
+  </div>
+  <div id="tourIcon"  class="tour-icon"></div>
+  <h3 id="tourTitle" class="tour-title"></h3>
+  <p  id="tourBody"  class="tour-body"></p>
+  <div class="tour-dots" id="tourDots"></div>
+  <div class="tour-footer">
+    <button id="tourPrev" class="btn-secondary tour-nav-btn"><i class="fa fa-arrow-left"></i> Back</button>
+    <button id="tourNext" class="btn-primary  tour-nav-btn">Next <i class="fa fa-arrow-right"></i></button>
+  </div>
+  <div class="tour-arrow" id="tourArrow"></div>
+</div>
+<div id="tourHighlight" class="tour-highlight" aria-hidden="true"></div>
+<div id="tourBackdrop"  class="tour-backdrop"  aria-hidden="true"></div>
+
+<!-- ===== HELP PANEL (? button → full guide) ===== -->
+<div id="helpPanel" class="help-panel" role="dialog" aria-modal="true" aria-labelledby="helpPanelTitle" style="display:none">
+  <div class="help-panel-backdrop" id="helpPanelBackdrop"></div>
+  <div class="help-panel-box">
+    <div class="help-panel-header">
+      <span class="help-panel-title" id="helpPanelTitle"><i class="fa fa-circle-question"></i> GeoAlert User Guide</span>
+      <button id="helpPanelClose" class="modal-close" aria-label="Close help panel"><i class="fa fa-times"></i></button>
+    </div>
+
+    <!-- Tab nav -->
+    <div class="help-tabs" role="tablist" aria-label="Help sections">
+      <button class="help-tab active" data-tab="overview"   role="tab" aria-selected="true">Overview</button>
+      <button class="help-tab"        data-tab="map"        role="tab">🗺 Map</button>
+      <button class="help-tab"        data-tab="filters"    role="tab">🔍 Filters</button>
+      <button class="help-tab"        data-tab="nearme"     role="tab">📍 Near Me</button>
+      <button class="help-tab"        data-tab="views"      role="tab">📊 Views</button>
+      <button class="help-tab"        data-tab="faq"        role="tab">❓ FAQ</button>
+      <button class="help-tab"        data-tab="shortcuts"  role="tab">⌨️ Shortcuts</button>
+    </div>
+
+    <div class="help-content" id="helpContent">
+
+      <!-- OVERVIEW -->
+      <div class="help-pane active" data-pane="overview">
+        <div class="help-intro-banner">
+          <div class="help-intro-icon">🌍</div>
+          <div>
+            <h2>What is GeoAlert?</h2>
+            <p>GeoAlert pulls live data from <b>NASA's Earth Observatory Natural Event Tracker (EONET v3)</b> — the same data NASA scientists use — and presents it in a way anyone can understand and act on.</p>
+          </div>
+        </div>
+        <div class="help-section-grid">
+          <div class="help-feature-block">
+            <div class="hfb-icon">🗺️</div>
+            <h3>Map View</h3>
+            <p>Interactive world map with color-coded markers for every event type. Click any marker to see full details.</p>
+            <button class="help-goto-btn" data-goto="map">Go to Map →</button>
+          </div>
+          <div class="help-feature-block">
+            <div class="hfb-icon">📋</div>
+            <h3>Events List</h3>
+            <p>Browse all events as cards. Sort by date, name or category. Click a card for full details.</p>
+            <button class="help-goto-btn" data-goto="list">Go to Events →</button>
+          </div>
+          <div class="help-feature-block">
+            <div class="hfb-icon">⏱️</div>
+            <h3>Timeline</h3>
+            <p>See daily counts, category breakdown and weekday activity charts to spot patterns over time.</p>
+            <button class="help-goto-btn" data-goto="timeline">Go to Timeline →</button>
+          </div>
+          <div class="help-feature-block">
+            <div class="hfb-icon">📍</div>
+            <h3>Near Me</h3>
+            <p>Type your city or share your GPS location to see events within a chosen radius — with distance and safety context.</p>
+            <button class="help-goto-btn" data-goto="nearme">Go to Near Me →</button>
+          </div>
+          <div class="help-feature-block">
+            <div class="hfb-icon">🎓</div>
+            <h3>Learn</h3>
+            <p>Deep-dive into each event type: what causes it, how dangerous it can be, and how to stay safe.</p>
+            <button class="help-goto-btn" data-goto="learn">Go to Learn →</button>
+          </div>
+          <div class="help-feature-block">
+            <div class="hfb-icon">📊</div>
+            <h3>Statistics</h3>
+            <p>KPI cards, pie charts, trend lines and a ranked top-10 events table — all from your current filter set.</p>
+            <button class="help-goto-btn" data-goto="stats">Go to Stats →</button>
+          </div>
+        </div>
+        <div class="help-tip-box">
+          <i class="fa fa-lightbulb"></i>
+          <div><b>Pro tip:</b> Use the left sidebar filters to narrow by category, date range or keyword — then click <b>Apply Filters</b> to update every view at once.</div>
+        </div>
+        <button id="btnLaunchTour" class="btn-primary" style="margin-top:16px"><i class="fa fa-play"></i> Launch Interactive Tour</button>
+      </div>
+
+      <!-- MAP -->
+      <div class="help-pane" data-pane="map">
+        <h2>🗺️ Using the Map</h2>
+        <div class="help-steps">
+          <div class="help-step"><span class="hs-num">1</span><div><b>Navigate</b> — Scroll to zoom, click and drag to pan. Use the <kbd>+</kbd>/<kbd>−</kbd> buttons bottom-right.</div></div>
+          <div class="help-step"><span class="hs-num">2</span><div><b>Click a marker</b> — A popup shows the event name, category badge, date and magnitude. Hit <b>View Details →</b> to open the full detail panel.</div></div>
+          <div class="help-step"><span class="hs-num">3</span><div><b>Clustered circles</b> — When many events are close together they cluster. Click a cluster number to zoom in and split them apart.</div></div>
+          <div class="help-step"><span class="hs-num">4</span><div><b>Map Layer</b> — In the left sidebar choose Standard, Satellite, Topographic, or Dark map.</div></div>
+          <div class="help-step"><span class="hs-num">5</span><div><b>Top-right controls</b> — ⛶ Fit All zooms to show every event. ⊞ Cluster toggles grouping. 🔥 Heatmap (coming soon).</div></div>
+          <div class="help-step"><span class="hs-num">6</span><div><b>Legend</b> — Bottom-left shows the color/icon key for event categories currently on the map.</div></div>
+        </div>
+        <div class="help-color-grid">
+          <div class="help-color-item"><span style="background:#ff6b35">🔥</span>Wildfires</div>
+          <div class="help-color-item"><span style="background:#4fc3f7">⛈️</span>Severe Storms</div>
+          <div class="help-color-item"><span style="background:#2196f3">🌊</span>Floods</div>
+          <div class="help-color-item"><span style="background:#ff5722">🌋</span>Volcanoes</div>
+          <div class="help-color-item"><span style="background:#9c27b0">🏔️</span>Earthquakes</div>
+          <div class="help-color-item"><span style="background:#80deea">🧊</span>Sea Ice</div>
+          <div class="help-color-item"><span style="background:#795548">⛰️</span>Landslides</div>
+          <div class="help-color-item"><span style="background:#ff9800">☀️</span>Drought</div>
+          <div class="help-color-item"><span style="background:#d4ac78">🌫️</span>Dust/Haze</div>
+        </div>
+      </div>
+
+      <!-- FILTERS -->
+      <div class="help-pane" data-pane="filters">
+        <h2>🔍 Filters &amp; Search</h2>
+        <p style="color:var(--text-secondary);margin-bottom:16px">All filters live in the left sidebar. Change them then hit <b>Apply Filters</b> to reload data from NASA.</p>
+        <div class="help-table">
+          <div class="ht-row ht-head"><div>Filter</div><div>What it does</div></div>
+          <div class="ht-row"><div><b>Keyword Search</b></div><div>Instantly filters visible events by title or description — no Apply needed, updates as you type.</div></div>
+          <div class="ht-row"><div><b>Status</b></div><div><span class="badge badge-open" style="font-size:0.75rem">Open</span> = still active. <span class="badge badge-closed" style="font-size:0.75rem">Closed</span> = resolved. <b>All</b> shows both.</div></div>
+          <div class="ht-row"><div><b>Time Window</b></div><div>Pick 3 / 7 / 14 / 30 days, or choose <b>Custom</b> to set exact start and end dates.</div></div>
+          <div class="ht-row"><div><b>Max Events</b></div><div>Cap how many events are loaded (20–200). Lower = faster; higher = more complete.</div></div>
+          <div class="ht-row"><div><b>Categories</b></div><div>Check/uncheck individual event types. The number badge shows how many events are in each category right now.</div></div>
+          <div class="ht-row"><div><b>Map Layer</b></div><div>Change the background map style: Standard, Satellite, Topo, or Dark.</div></div>
+          <div class="ht-row"><div><b>Clear All</b></div><div>Resets every filter to defaults in one click.</div></div>
+        </div>
+        <div class="help-tip-box"><i class="fa fa-lightbulb"></i><div><b>Tip:</b> Keyword search works live — start typing "fire" or "storm" and the event list updates immediately without pressing Apply.</div></div>
+      </div>
+
+      <!-- NEAR ME -->
+      <div class="help-pane" data-pane="nearme">
+        <h2>📍 Near Me — Find Events Around You</h2>
+        <div class="help-steps">
+          <div class="help-step"><span class="hs-num">1</span><div>Click <b>"Use My Location"</b> — your browser will ask permission for GPS. Allow it and GeoAlert will find your coordinates automatically.</div></div>
+          <div class="help-step"><span class="hs-num">2</span><div><b>Or type a location</b> — Enter a city name like <code>Tokyo</code>, a country like <code>Brazil</code>, or raw coordinates like <code>51.5, -0.1</code> (lat, lon).</div></div>
+          <div class="help-step"><span class="hs-num">3</span><div><b>Set the radius</b> — Choose 100 km, 200 km, 500 km or 1000 km to control how wide to search.</div></div>
+          <div class="help-step"><span class="hs-num">4</span><div>The <b>mini-map</b> shows your location (blue dot), radius circle, and nearby event markers. The list on the right is sorted closest-first.</div></div>
+          <div class="help-step"><span class="hs-num">5</span><div>Each result shows a <b>safety note</b> — yellow for nearby, orange for very close — with advice to check local authorities.</div></div>
+          <div class="help-step"><span class="hs-num">6</span><div>Click any event card or map marker to open the full <b>detail panel</b>.</div></div>
+        </div>
+        <div class="help-tip-box warn"><i class="fa fa-triangle-exclamation"></i><div><b>Important:</b> GeoAlert provides awareness only. Always follow instructions from your local emergency services for immediate safety.</div></div>
+      </div>
+
+      <!-- VIEWS -->
+      <div class="help-pane" data-pane="views">
+        <h2>📊 Other Views Explained</h2>
+        <div class="help-accordion" id="helpAccordion">
+          <div class="ha-item">
+            <button class="ha-trigger">⏱️ Timeline View <i class="fa fa-chevron-down"></i></button>
+            <div class="ha-body">
+              <p>Three charts at the top: a <b>daily bar chart</b> (how many events per day), a <b>category doughnut</b> (share of each type), and a <b>weekday bar</b> (which days have most activity). Below is a scrollable chronological list of all events — click any to open details.</p>
+            </div>
+          </div>
+          <div class="ha-item">
+            <button class="ha-trigger">📊 Statistics View <i class="fa fa-chevron-down"></i></button>
+            <div class="ha-body">
+              <p>Five <b>KPI cards</b> at the top: total events, active count, closed count, categories count, and regions. Then a <b>horizontal category bar chart</b>, a <b>status pie chart</b>, and a <b>30-day trend line</b>. At the bottom is a ranked <b>Top 10 Events</b> table — click any row to see full details.</p>
+            </div>
+          </div>
+          <div class="ha-item">
+            <button class="ha-trigger">🎓 Learn View <i class="fa fa-chevron-down"></i></button>
+            <div class="ha-body">
+              <p>Click any category card (Wildfires, Floods, etc.) to open a detailed knowledge modal with: a plain-English explanation, key facts table, safety tips, live EONET examples from current data, and links to authoritative external resources (USGS, FEMA, NHC etc.).</p>
+            </div>
+          </div>
+          <div class="ha-item">
+            <button class="ha-trigger">🔎 Event Detail Panel <i class="fa fa-chevron-down"></i></button>
+            <div class="ha-body">
+              <p>Slides in from the right whenever you click any event. Contains: a <b>mini-map</b> zoomed to the event location, <b>geometry timeline</b> (historical coordinate points over time), <b>source links</b> to NASA and curator sites, and the event's unique ID. Close with ✕ or press <kbd>Esc</kbd>.</p>
+            </div>
+          </div>
+          <div class="ha-item">
+            <button class="ha-trigger">📤 Share Snapshot <i class="fa fa-chevron-down"></i></button>
+            <div class="ha-body">
+              <p>Click the <b><i class="fa fa-share-nodes"></i></b> icon in the top bar. A summary card shows your current filter state, event count, and top 3 events. Copy the URL (restores your exact filters) or copy plain text to paste anywhere.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FAQ -->
+      <div class="help-pane" data-pane="faq">
+        <h2>❓ Frequently Asked Questions</h2>
+        <div class="help-accordion" id="helpFaq">
+          <div class="ha-item"><button class="ha-trigger">Where does the data come from? <i class="fa fa-chevron-down"></i></button><div class="ha-body"><p>All event data comes from <a href="https://eonet.gsfc.nasa.gov/" target="_blank" rel="noopener">NASA's Earth Observatory Natural Event Tracker (EONET) v3 API</a>. EONET aggregates data from USGS, NOAA, InciWeb, and other authoritative curators.</p></div></div>
+          <div class="ha-item"><button class="ha-trigger">How current is the data? <i class="fa fa-chevron-down"></i></button><div class="ha-body"><p>Events are updated by NASA's curators continuously. GeoAlert caches each API response for 3 minutes — so hitting refresh more than once per 3 minutes won't re-fetch. Click <b>🔄 Refresh</b> in the top bar to manually clear the cache.</p></div></div>
+          <div class="ha-item"><button class="ha-trigger">Why does it say "showing sample data"? <i class="fa fa-chevron-down"></i></button><div class="ha-body"><p>NASA's EONET API occasionally goes into maintenance or has high traffic causing 503 errors. When that happens, GeoAlert automatically shows a representative set of real historical events so the app stays functional. It silently retries every 60 seconds and will switch back to live data automatically.</p></div></div>
+          <div class="ha-item"><button class="ha-trigger">Is this app safe to use on mobile? <i class="fa fa-chevron-down"></i></button><div class="ha-body"><p>Yes. GeoAlert is mobile-first and works on any modern smartphone browser. The sidebar collapses on small screens — use the top navigation buttons instead. The Near Me GPS feature works on mobile browsers that support geolocation.</p></div></div>
+          <div class="ha-item"><button class="ha-trigger">Can I filter by a specific region or country? <i class="fa fa-chevron-down"></i></button><div class="ha-body"><p>Yes — use the <b>Near Me</b> view and type a country or region name, then increase the radius to 500–1000 km. The bounding box search will pull only events from that area. The main map also lets you visually identify regional clusters.</p></div></div>
+          <div class="ha-item"><button class="ha-trigger">What does "Open" vs "Closed" mean? <i class="fa fa-chevron-down"></i></button><div class="ha-body"><p><b>Open</b> = the event is still active and being tracked by NASA's curators. <b>Closed</b> = the event has ended and a closing date has been recorded. By default, GeoAlert shows only Open events — change the Status filter to see Closed or All.</p></div></div>
+          <div class="ha-item"><button class="ha-trigger">What is Magnitude? <i class="fa fa-chevron-down"></i></button><div class="ha-body"><p>For storms: wind speed in knots. For temperature extremes: degrees Celsius. For fires/floods it's often not available (—). The magnitude value and unit come directly from NASA's EONET data for each individual event.</p></div></div>
+          <div class="ha-item"><button class="ha-trigger">How do I share this with my community? <i class="fa fa-chevron-down"></i></button><div class="ha-body"><p>Click the <b><i class="fa fa-share-nodes"></i> Share</b> button (top bar). Copy the URL — it encodes your current filters so anyone who opens it sees exactly what you see. You can also copy the plain-text summary to paste into messaging apps or social media.</p></div></div>
+        </div>
+      </div>
+
+      <!-- SHORTCUTS -->
+      <div class="help-pane" data-pane="shortcuts">
+        <h2>⌨️ Keyboard Shortcuts &amp; Tips</h2>
+        <div class="help-table">
+          <div class="ht-row ht-head"><div>Key / Action</div><div>What it does</div></div>
+          <div class="ht-row"><div><kbd>Esc</kbd></div><div>Close any open panel, drawer or modal</div></div>
+          <div class="ht-row"><div><kbd>?</kbd> button</div><div>Open this User Guide from anywhere</div></div>
+          <div class="ht-row"><div><kbd>🔄</kbd> Refresh</div><div>Clear cache and reload live NASA data</div></div>
+          <div class="ht-row"><div><kbd>Apply Filters</kbd></div><div>Sends your current filter settings to NASA's API and refreshes all views</div></div>
+          <div class="ht-row"><div><kbd>Clear All</kbd></div><div>Resets every filter to its default state</div></div>
+          <div class="ht-row"><div>Scroll wheel on map</div><div>Zoom in / out</div></div>
+          <div class="ht-row"><div>Click + drag on map</div><div>Pan the map</div></div>
+          <div class="ht-row"><div>Click a cluster circle</div><div>Zoom in to expand grouped markers</div></div>
+          <div class="ht-row"><div>Click any event card / row</div><div>Open the Event Detail panel on the right</div></div>
+          <div class="ht-row"><div>Click map marker → View Details</div><div>Open Event Detail panel from popup</div></div>
+          <div class="ht-row"><div>⛶ Fit All button (map)</div><div>Zoom the map to fit all current events</div></div>
+          <div class="ht-row"><div>Dark/light toggle (☯)</div><div>Switch between dark and light colour themes</div></div>
+        </div>
+        <div class="help-tip-box"><i class="fa fa-lightbulb"></i><div><b>Traveller tip:</b> Before a trip, go to Near Me → type your destination city → set radius to 500 km → check for any open events. Use the Learn tab to understand what any flagged events mean.</div></div>
+        <div class="help-tip-box" style="margin-top:10px"><i class="fa fa-graduation-cap"></i><div><b>Teacher tip:</b> Use the Learn tab category cards as lesson starters. Each card links to USGS, NOAA, FEMA, and other free educational resources with live examples from today's data.</div></div>
+      </div>
+
+    </div><!-- end help-content -->
+  </div><!-- end help-panel-box -->
+</div><!-- end help-panel -->
 
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

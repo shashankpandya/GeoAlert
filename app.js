@@ -1359,24 +1359,281 @@ function bindEvents() {
 
   // Keyboard shortcuts
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { UIModule.closeDrawer(); closeLearnModal(); document.getElementById('snapshotModal').style.display='none'; }
+    if (e.key === 'Escape') {
+      UIModule.closeDrawer();
+      closeLearnModal();
+      document.getElementById('snapshotModal').style.display = 'none';
+      document.getElementById('helpPanel').style.display = 'none';
+      TourModule.end();
+    }
   });
 }
 
 /* ============================================================
-   18. INIT
+   19. USER GUIDE – Welcome, Tour, Help Panel
+   ============================================================ */
+
+/* ---------- Tour step definitions ---------- */
+const TOUR_STEPS = [
+  {
+    icon: '🌍', title: 'Welcome to GeoAlert!',
+    body: 'This quick tour walks you through every feature in about 2 minutes. You can exit at any time by pressing Esc or clicking the ✕.',
+    target: null, position: 'center'
+  },
+  {
+    icon: '🗺️', title: 'The Live World Map',
+    body: 'The Map view shows every active natural event as a color-coded emoji marker. 🔥 Wildfires are orange, ⛈️ Storms are blue, 🌋 Volcanoes are red, and so on. Click any marker to see details.',
+    target: '.nav-btn[data-view="map"]', position: 'bottom', view: 'map'
+  },
+  {
+    icon: '🔍', title: 'Filters Sidebar',
+    body: 'Use the left panel to filter by Status (Open/Closed), Time Window (last 3–30 days), Category (wildfires, storms…) and keyword. Hit Apply Filters to reload.',
+    target: '.sidebar__header', position: 'right'
+  },
+  {
+    icon: '📋', title: 'Events List',
+    body: 'Switch to Events view for a card-based layout of all events. Sort by newest, oldest, or category. Click any card to open the detail panel on the right.',
+    target: '.nav-btn[data-view="list"]', position: 'bottom', view: 'list'
+  },
+  {
+    icon: '📍', title: 'Near Me – Your Local Events',
+    body: 'Click "Use My Location" or type a city name to find natural events within 100–1000 km of you. Each result shows the exact distance and a safety context note.',
+    target: '.nav-btn[data-view="nearme"]', position: 'bottom', view: 'nearme'
+  },
+  {
+    icon: '⏱️', title: 'Timeline & Charts',
+    body: 'The Timeline view shows daily event counts, category breakdown, and weekday activity — perfect for spotting patterns and trends over your selected date range.',
+    target: '.nav-btn[data-view="timeline"]', position: 'bottom', view: 'timeline'
+  },
+  {
+    icon: '🎓', title: 'Learn About Each Event Type',
+    body: 'The Learn tab has deep-dive cards for every category: plain-English explanations, key facts, safety tips, and live EONET examples. Great for students and curious users alike.',
+    target: '.nav-btn[data-view="learn"]', position: 'bottom', view: 'learn'
+  },
+  {
+    icon: '📤', title: 'Share a Snapshot',
+    body: 'Click the share icon (top bar) to generate a summary of your current view with a shareable URL. The link restores your exact filters so anyone can see what you see.',
+    target: '#btnSnapshot', position: 'bottom'
+  },
+  {
+    icon: '❓', title: 'User Guide Always Available',
+    body: 'Click the ? button any time to open this full User Guide — with tabs for the Map, Filters, Near Me, FAQ, and keyboard shortcuts. You\'re all set!',
+    target: '#btnGuide', position: 'bottom'
+  },
+];
+
+const TourModule = {
+  current: 0,
+  active:  false,
+
+  start() {
+    this.current = 0;
+    this.active  = true;
+    document.getElementById('tourBackdrop').classList.add('active');
+    this.show();
+  },
+
+  show() {
+    const step = TOUR_STEPS[this.current];
+    const tooltip = document.getElementById('tourTooltip');
+    document.getElementById('tourStep').textContent  = `Step ${this.current + 1} / ${TOUR_STEPS.length}`;
+    document.getElementById('tourIcon').textContent  = step.icon;
+    document.getElementById('tourTitle').textContent = step.title;
+    document.getElementById('tourBody').textContent  = step.body;
+    document.getElementById('tourPrev').disabled     = this.current === 0;
+
+    const nextBtn = document.getElementById('tourNext');
+    nextBtn.innerHTML = this.current === TOUR_STEPS.length - 1
+      ? '<i class="fa fa-check"></i> Finish'
+      : 'Next <i class="fa fa-arrow-right"></i>';
+
+    // Dots
+    const dots = document.getElementById('tourDots');
+    dots.innerHTML = TOUR_STEPS.map((_, i) =>
+      `<div class="tour-dot ${i === this.current ? 'active' : ''}"></div>`).join('');
+
+    // Navigate to view if needed
+    if (step.view) switchView(step.view);
+
+    // Position tooltip
+    tooltip.style.display = 'block';
+    this.positionTooltip(step);
+  },
+
+  positionTooltip(step) {
+    const tooltip   = document.getElementById('tourTooltip');
+    const highlight = document.getElementById('tourHighlight');
+    const arrow     = document.getElementById('tourArrow');
+    arrow.className = 'tour-arrow';
+
+    if (!step.target || step.position === 'center') {
+      highlight.classList.remove('active');
+      tooltip.style.top    = '50%';
+      tooltip.style.left   = '50%';
+      tooltip.style.transform = 'translate(-50%, -50%)';
+      return;
+    }
+
+    const el = document.querySelector(step.target);
+    if (!el) {
+      highlight.classList.remove('active');
+      tooltip.style.top    = '50%';
+      tooltip.style.left   = '50%';
+      tooltip.style.transform = 'translate(-50%, -50%)';
+      return;
+    }
+
+    tooltip.style.transform = '';
+    const rect    = el.getBoundingClientRect();
+    const tw      = tooltip.offsetWidth  || 320;
+    const th      = tooltip.offsetHeight || 200;
+    const pad     = 14;
+
+    // Highlight the target
+    highlight.classList.add('active');
+    highlight.style.top    = `${rect.top    - 4}px`;
+    highlight.style.left   = `${rect.left   - 4}px`;
+    highlight.style.width  = `${rect.width  + 8}px`;
+    highlight.style.height = `${rect.height + 8}px`;
+
+    // Position tooltip
+    if (step.position === 'bottom') {
+      let top  = rect.bottom + pad;
+      let left = rect.left + rect.width / 2 - tw / 2;
+      left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+      if (top + th > window.innerHeight - 8) top = rect.top - th - pad;
+      tooltip.style.top  = `${top}px`;
+      tooltip.style.left = `${left}px`;
+      arrow.classList.add('bottom');
+    } else if (step.position === 'right') {
+      let top  = rect.top + rect.height / 2 - th / 2;
+      let left = rect.right + pad;
+      top  = Math.max(8, Math.min(top, window.innerHeight - th - 8));
+      if (left + tw > window.innerWidth - 8) left = rect.left - tw - pad;
+      tooltip.style.top  = `${top}px`;
+      tooltip.style.left = `${left}px`;
+      arrow.classList.add('right');
+    }
+  },
+
+  next() {
+    if (this.current >= TOUR_STEPS.length - 1) { this.end(); return; }
+    this.current++;
+    this.show();
+  },
+
+  prev() {
+    if (this.current <= 0) return;
+    this.current--;
+    this.show();
+  },
+
+  end() {
+    this.active = false;
+    document.getElementById('tourTooltip').style.display = 'none';
+    document.getElementById('tourHighlight').classList.remove('active');
+    document.getElementById('tourBackdrop').classList.remove('active');
+    toast('Tour complete! Click ? any time to open the User Guide.', 'info', 4000);
+  }
+};
+
+/* ---------- Welcome overlay ---------- */
+function initWelcome() {
+  const seen = localStorage.getItem('geoalert_guide_seen');
+  const overlay = document.getElementById('welcomeOverlay');
+  if (seen === '1') { overlay.style.display = 'none'; return; }
+  overlay.style.display = 'flex';
+
+  document.getElementById('btnStartTour').addEventListener('click', () => {
+    if (document.getElementById('chkDontShow').checked) localStorage.setItem('geoalert_guide_seen', '1');
+    overlay.style.display = 'none';
+    setTimeout(() => TourModule.start(), 400);
+  });
+
+  document.getElementById('btnSkipTour').addEventListener('click', () => {
+    if (document.getElementById('chkDontShow').checked) localStorage.setItem('geoalert_guide_seen', '1');
+    overlay.style.display = 'none';
+  });
+}
+
+/* ---------- Help panel ---------- */
+function initHelpPanel() {
+  const panel = document.getElementById('helpPanel');
+
+  // Open
+  document.getElementById('btnGuide').addEventListener('click', () => {
+    panel.style.display = 'flex';
+    // stop pulsing once opened
+    document.getElementById('btnGuide').classList.remove('highlight-pulse');
+  });
+
+  // Close
+  document.getElementById('helpPanelClose').addEventListener('click', () => panel.style.display = 'none');
+  document.getElementById('helpPanelBackdrop').addEventListener('click', () => panel.style.display = 'none');
+
+  // Tab switching
+  document.querySelectorAll('.help-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.help-tab').forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
+      document.querySelectorAll('.help-pane').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected','true');
+      const pane = document.querySelector(`.help-pane[data-pane="${tab.dataset.tab}"]`);
+      if (pane) pane.classList.add('active');
+    });
+  });
+
+  // Go-to buttons inside overview
+  document.querySelectorAll('.help-goto-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      panel.style.display = 'none';
+      switchView(btn.dataset.goto);
+    });
+  });
+
+  // Launch tour from inside guide
+  document.getElementById('btnLaunchTour').addEventListener('click', () => {
+    panel.style.display = 'none';
+    setTimeout(() => TourModule.start(), 200);
+  });
+
+  // Accordion
+  document.querySelectorAll('.ha-trigger').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.ha-item');
+      item.classList.toggle('open');
+    });
+  });
+}
+
+/* ---------- Tour button bindings ---------- */
+function initTourButtons() {
+  document.getElementById('tourNext').addEventListener('click',  () => TourModule.next());
+  document.getElementById('tourPrev').addEventListener('click',  () => TourModule.prev());
+  document.getElementById('tourClose').addEventListener('click', () => TourModule.end());
+  document.addEventListener('keydown', e => {
+    if (!TourModule.active) return;
+    if (e.key === 'ArrowRight') TourModule.next();
+    if (e.key === 'ArrowLeft')  TourModule.prev();
+  });
+}
+
+/* ============================================================
+   18. INIT  (updated to include guide init)
    ============================================================ */
 document.addEventListener('DOMContentLoaded', async () => {
   applyURLParams();
   MapModule.init();
   bindEvents();
+  initWelcome();
+  initHelpPanel();
+  initTourButtons();
   await loadData();
 
   // Auto-retry every 60s if we're on fallback data
   setInterval(() => {
     const banner = document.getElementById('offlineBanner');
     if (banner) {
-      // We're in fallback mode — silently try again
       State.cache = {};
       loadData();
     }
