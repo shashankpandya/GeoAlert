@@ -138,12 +138,20 @@ select{width:100%}
 #globeCanvas:active{cursor:grabbing}
 .globe-overlay{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none}
 .globe-controls{position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:6px;pointer-events:all;z-index:10}
-.globe-ctrl-btn{width:34px;height:34px;background:var(--bg-glass);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-secondary);display:flex;align-items:center;justify-content:center;font-size:.82rem;backdrop-filter:blur(8px);transition:all var(--transition)}
-.globe-ctrl-btn:hover{background:var(--bg-hover);color:var(--cyan);border-color:var(--cyan)}
+.globe-ctrl-btn{width:34px;height:34px;background:var(--bg-glass);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-secondary);display:flex;align-items:center;justify-content:center;font-size:.82rem;backdrop-filter:blur(8px);transition:all var(--transition);position:relative}
+.globe-ctrl-btn:hover{background:var(--bg-hover);color:var(--cyan);border-color:var(--cyan);transform:translateY(-1px)}
 .globe-ctrl-btn.active{background:var(--cyan-dim);color:var(--cyan);border-color:rgba(0,212,255,0.5)}
+.globe-ctrl-btn::after{content:attr(data-tooltip);position:absolute;right:calc(100% + 8px);top:50%;transform:translateY(-50%);background:rgba(13,17,23,0.95);border:1px solid var(--border-bright);border-radius:6px;padding:4px 10px;font-size:.7rem;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:1000}
+.globe-ctrl-btn:hover::after{opacity:1}
 .globe-stats{position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:6px;pointer-events:none;z-index:10}
-.globe-stat-badge{background:var(--bg-glass);border:1px solid var(--border);border-radius:var(--radius-sm);padding:5px 10px;font-size:.72rem;backdrop-filter:blur(8px);color:var(--text-secondary)}
+.globe-stat-badge{background:var(--bg-glass);border:1px solid var(--border);border-radius:var(--radius-sm);padding:5px 10px;font-size:.72rem;backdrop-filter:blur(8px);color:var(--text-secondary);transition:all .3s ease}
+.globe-stat-badge:hover{background:rgba(22,27,34,0.95);border-color:var(--cyan);transform:translateY(-1px)}
 .globe-stat-badge span{color:var(--cyan);font-weight:700}
+.globe-loading-indicator{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg-glass);border:1px solid var(--cyan);border-radius:var(--radius-md);padding:20px 30px;backdrop-filter:blur(16px);display:none;z-index:100;pointer-events:none}
+.globe-loading-indicator.show{display:block}
+.globe-loading-text{color:var(--cyan);font-weight:600;font-size:.9rem;display:flex;align-items:center;gap:10px}
+.globe-loading-spinner{width:20px;height:20px;border:3px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 /* Popup is FIXED so clientX/Y coords work correctly */
 .globe-event-popup{position:fixed;background:rgba(13,17,23,0.96);border:1px solid var(--border-bright);border-radius:var(--radius-md);padding:14px 16px;backdrop-filter:blur(16px);max-width:280px;z-index:2001;pointer-events:all;display:none;box-shadow:0 8px 32px rgba(0,0,0,0.7),0 0 0 1px rgba(0,212,255,0.15)}
 .globe-popup-title{font-weight:700;font-size:.9rem;margin-bottom:6px;line-height:1.4;padding-right:20px}
@@ -688,18 +696,26 @@ kbd{background:var(--bg-card);border:1px solid var(--border);border-radius:4px;p
     <section class="view active" id="view-globe" aria-label="3D Globe">
       <canvas id="globeCanvas" aria-label="Interactive 3D globe with natural event markers"></canvas>
       <div class="globe-overlay">
+        <!-- Loading Indicator -->
+        <div class="globe-loading-indicator" id="globeLoading">
+          <div class="globe-loading-text">
+            <div class="globe-loading-spinner"></div>
+            <span>Loading Earth textures...</span>
+          </div>
+        </div>
+        
         <div class="globe-stats" id="globeStats">
-          <div class="globe-stat-badge">🌍 Events: <span id="globeEventCount">0</span></div>
-          <div class="globe-stat-badge">🔴 Critical: <span id="globeCritical">0</span></div>
-          <div class="globe-stat-badge">🟠 High: <span id="globeHigh">0</span></div>
-          <div class="globe-stat-badge">🤖 AI Active: <span style="color:var(--purple)">ON</span></div>
+          <div class="globe-stat-badge" title="Total active events on globe">🌍 Events: <span id="globeEventCount">0</span></div>
+          <div class="globe-stat-badge" title="Critical severity events (M7+)">🔴 Critical: <span id="globeCritical">0</span></div>
+          <div class="globe-stat-badge" title="High severity events (M5-7)">🟠 High: <span id="globeHigh">0</span></div>
+          <div class="globe-stat-badge" title="AI analysis engine status">🤖 AI Active: <span style="color:var(--purple)">ON</span></div>
         </div>
         <div class="globe-controls">
-          <button class="globe-ctrl-btn active" id="btnGlobeRotate" title="Auto-rotate"><i class="fa fa-rotate"></i></button>
-          <button class="globe-ctrl-btn" id="btnGlobeAtmo" title="Atmosphere"><i class="fa fa-cloud"></i></button>
-          <button class="globe-ctrl-btn active" id="btnGlobeMarkers" title="Event markers"><i class="fa fa-location-dot"></i></button>
-          <button class="globe-ctrl-btn" id="btnGlobeNight" title="Day/Night terminator"><i class="fa fa-moon"></i></button>
-          <button class="globe-ctrl-btn" id="btnGlobeReset" title="Reset view"><i class="fa fa-expand"></i></button>
+          <button class="globe-ctrl-btn active" id="btnGlobeRotate" data-tooltip="Toggle Auto-rotate"><i class="fa fa-rotate"></i></button>
+          <button class="globe-ctrl-btn" id="btnGlobeAtmo" data-tooltip="Toggle Atmosphere"><i class="fa fa-cloud"></i></button>
+          <button class="globe-ctrl-btn active" id="btnGlobeMarkers" data-tooltip="Toggle Event Markers"><i class="fa fa-location-dot"></i></button>
+          <button class="globe-ctrl-btn" id="btnGlobeNight" data-tooltip="Day/Night Terminator"><i class="fa fa-moon"></i></button>
+          <button class="globe-ctrl-btn" id="btnGlobeReset" data-tooltip="Reset Camera View"><i class="fa fa-expand"></i></button>
         </div>
         <div class="globe-legend">
           <div class="globe-legend-title">Severity</div>
@@ -1634,31 +1650,60 @@ class Globe3DEngine {
     const canvas = document.getElementById('globeCanvas');
     if (!canvas || !window.THREE) return;
 
+    // Show loading indicator
+    const loadingEl = document.getElementById('globeLoading');
+    if (loadingEl) loadingEl.classList.add('show');
+
     const parent = canvas.parentElement;
     const W = parent.offsetWidth || window.innerWidth - 270;
     const H = parent.offsetHeight || window.innerHeight - 80;
 
     // Scene
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(45, W/H, 0.1, 1000);
-    this.camera.position.z = 2.5;
+    // Camera with optimized field of view for immersive experience
+    this.camera = new THREE.PerspectiveCamera(50, W/H, 0.1, 1000);
+    this.camera.position.z = 2.4; // Slightly closer for better detail
+    this.camera.position.y = 0.1; // Subtle offset for more dynamic angle
 
-    // Renderer
-    this.renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+    // Renderer with enhanced quality settings
+    this.renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+      alpha: true,
+      powerPreference: 'high-performance',
+      precision: 'highp',
+      logarithmicDepthBuffer: false,
+    });
     this.renderer.setSize(W, H);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.1;
+    this.renderer.outputEncoding = THREE.sRGBEncoding || THREE.LinearEncoding;
     this.renderer.setClearColor(0x010409, 1);
 
-    // Lights — realistic sun at ~45° angle
-    const ambLight = new THREE.AmbientLight(0x223355, 0.35);
+    // Enhanced realistic lighting setup
+    // Ambient light (simulates scattered atmospheric light)
+    const ambLight = new THREE.AmbientLight(0x1a2838, 0.42);
     this.scene.add(ambLight);
-    const sunLight = new THREE.DirectionalLight(0xfff5e0, 1.4);
-    sunLight.position.set(5, 2, 4);
+    
+    // Main sun light at realistic angle (~45° above horizon from viewer perspective)
+    const sunLight = new THREE.DirectionalLight(0xfff8f0, 1.8);
+    sunLight.position.set(5, 2.5, 4);
     this.scene.add(sunLight);
-    // Weak fill light from opposite side (earthshine/reflected moon)
-    const fillLight = new THREE.DirectionalLight(0x334466, 0.15);
-    fillLight.position.set(-4, -1, -3);
+    
+    // Secondary sun light for softer shadows (simulates atmospheric scattering)
+    const sunLight2 = new THREE.DirectionalLight(0xffe8d0, 0.6);
+    sunLight2.position.set(3, 1, 5);
+    this.scene.add(sunLight2);
+    
+    // Fill light from opposite side (earthshine/moon reflection + space scattered light)
+    const fillLight = new THREE.DirectionalLight(0x334d66, 0.22);
+    fillLight.position.set(-4, -0.5, -3);
     this.scene.add(fillLight);
+    
+    // Hemisphere light for subtle sky dome effect
+    const hemiLight = new THREE.HemisphereLight(0x0066aa, 0x000511, 0.25);
+    this.scene.add(hemiLight);
 
     // Starfield
     this._buildStarfield();
@@ -1751,27 +1796,28 @@ class Globe3DEngine {
   // high-quality hand-painted canvas only if the images fail to load.
   // ─────────────────────────────────────────────────────────────────────────
   _buildEarth() {
-    const geo = new THREE.SphereGeometry(1, 128, 128);
+    const geo = new THREE.SphereGeometry(1, 256, 256); // Increased geometry resolution
 
     // ── NASA / public-domain texture URLs (CORS-safe, served over HTTPS) ──
-    // Primary: NASA Visible Earth Blue Marble (2048×1024) via a CORS proxy / CDN
-    // We try several mirrors; the TextureLoader falls back via onerror chain.
+    // Using reliable CDN sources with proven availability
     const TEXTURE_URLS = [
-      // unpkg-hosted three.js example textures (Blue Marble derivative, 2048)
+      // Three.js official examples - most reliable
       'https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg',
-      // Solar System Scope free pack (4096, best quality)
-      'https://www.solarsystemscope.com/textures/download/2k_earth_daymap.jpg',
-      // NASA EOSDIS public domain fallback
-      'https://neo.gsfc.nasa.gov/servlet/RenderData?si=875430&cs=rgb&format=JPEG&width=2048&height=1024',
+      // Alternative CDN sources
+      'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg',
+      'https://unpkg.com/three@0.128.0/examples/textures/planets/earth_atmos_2048.jpg',
     ];
     const SPEC_URLS = [
       'https://threejs.org/examples/textures/planets/earth_specular_2048.jpg',
+      'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_specular_2048.jpg',
     ];
     const BUMP_URLS = [
       'https://threejs.org/examples/textures/planets/earth_normal_2048.jpg',
+      'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_normal_2048.jpg',
     ];
     const CLOUDS_URLS = [
       'https://threejs.org/examples/textures/planets/earth_clouds_2048.png',
+      'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_2048.png',
     ];
 
     const loader = new THREE.TextureLoader();
@@ -1781,21 +1827,29 @@ class Globe3DEngine {
     const loadFirst = (urls, onSuccess, onFail) => {
       const attempt = (i) => {
         if (i >= urls.length) { onFail(); return; }
+        console.log(`Loading texture attempt ${i + 1}/${urls.length}: ${urls[i]}`);
         loader.load(urls[i],
-          tex => onSuccess(tex),
+          tex => {
+            console.log(`✓ Successfully loaded: ${urls[i]}`);
+            onSuccess(tex);
+          },
           undefined,
-          () => attempt(i + 1)
+          (err) => {
+            console.warn(`✗ Failed to load: ${urls[i]}`, err);
+            attempt(i + 1);
+          }
         );
       };
       attempt(0);
     };
 
-    // Create the globe mesh immediately with a placeholder material
-    // so it appears on screen while textures download
+    // Create the globe mesh immediately with a photorealistic placeholder
     const placeholderMat = new THREE.MeshPhongMaterial({
-      color: 0x1a3a6a,
-      specular: new THREE.Color(0x224466),
-      shininess: 12,
+      color: 0x1a4d7a,
+      specular: new THREE.Color(0x3388bb),
+      shininess: 15,
+      emissive: new THREE.Color(0x041520),
+      emissiveIntensity: 0.08,
     });
     this.globe = new THREE.Mesh(geo, placeholderMat);
     this.scene.add(this.globe);
@@ -1804,49 +1858,100 @@ class Globe3DEngine {
     loadFirst(TEXTURE_URLS, (dayTex) => {
       dayTex.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
       dayTex.colorSpace = THREE.SRGBColorSpace || THREE.LinearEncoding;
+      dayTex.minFilter = THREE.LinearMipmapLinearFilter;
+      dayTex.magFilter = THREE.LinearFilter;
 
       const mat = new THREE.MeshPhongMaterial({
         map: dayTex,
-        specular: new THREE.Color(0x336699),
-        shininess: 18,
+        specular: new THREE.Color(0x4488cc),
+        shininess: 22,
+        emissive: new THREE.Color(0x000000),
+        emissiveIntensity: 0,
       });
       this.globe.material = mat;
       this.globe.material.needsUpdate = true;
 
+      // Hide loading indicator - main texture loaded
+      const loadingEl = document.getElementById('globeLoading');
+      if (loadingEl) {
+        setTimeout(() => loadingEl.classList.remove('show'), 500);
+      }
+
       // ── Load specular map (ocean shine) ──
       loadFirst(SPEC_URLS, (specTex) => {
+        specTex.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
         mat.specularMap = specTex;
+        mat.shininess = 25; // More pronounced ocean reflections
         mat.needsUpdate = true;
-      }, () => {/* no specular, fine */});
+        console.log('✓ Specular map applied - oceans will shine');
+      }, () => {
+        console.warn('⚠ Specular map unavailable - using basic shader');
+        // Create procedural specular if download fails
+        this._createProceduralSpecular(mat);
+      });
 
       // ── Load bump/normal map (terrain relief) ──
       loadFirst(BUMP_URLS, (bumpTex) => {
-        mat.bumpMap   = bumpTex;
-        mat.bumpScale = 0.05;
+        bumpTex.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
+        mat.normalMap = bumpTex;
+        mat.normalScale = new THREE.Vector2(0.85, 0.85);
         mat.needsUpdate = true;
-      }, () => {/* no bump, fine */});
+        console.log('✓ Normal map applied - terrain has relief');
+      }, () => {
+        console.warn('⚠ Normal map unavailable');
+      });
 
       // ── Cloud layer ──
       loadFirst(CLOUDS_URLS, (cloudTex) => {
-        const cloudGeo = new THREE.SphereGeometry(1.008, 64, 64);
+        cloudTex.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
+        const cloudGeo = new THREE.SphereGeometry(1.01, 128, 128);
         const cloudMat = new THREE.MeshPhongMaterial({
           map: cloudTex,
           transparent: true,
-          opacity: 0.38,
+          opacity: 0.42,
           depthWrite: false,
           blending: THREE.NormalBlending,
         });
         this.clouds = new THREE.Mesh(cloudGeo, cloudMat);
         this.scene.add(this.clouds);
-        // Slow independent cloud drift
         this.cloudDrift = true;
-      }, () => {/* no clouds, fine */});
+        console.log('✓ Cloud layer added');
+      }, () => {
+        console.warn('⚠ Cloud layer unavailable');
+      });
 
     }, () => {
       // ── ALL texture URLs failed → render high-quality canvas fallback ──
-      console.warn('Earth Pulse: NASA textures unavailable, using canvas fallback');
+      console.warn('⚠ Earth Pulse: NASA textures unavailable, using canvas fallback');
       this._buildEarthFallback(geo);
+      
+      // Hide loading indicator
+      const loadingEl = document.getElementById('globeLoading');
+      if (loadingEl) {
+        setTimeout(() => loadingEl.classList.remove('show'), 500);
+      }
     });
+  }
+
+  // Helper: Create procedural specular map if download fails
+  _createProceduralSpecular(material) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+    
+    // Ocean bright, land dark approximation
+    const gradient = ctx.createLinearGradient(0, 0, 512, 256);
+    gradient.addColorStop(0, '#3388bb');
+    gradient.addColorStop(0.5, '#5599cc');
+    gradient.addColorStop(1, '#3388bb');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 512, 256);
+    
+    const specTex = new THREE.CanvasTexture(canvas);
+    specTex.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
+    material.specularMap = specTex;
+    material.needsUpdate = true;
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -2047,35 +2152,39 @@ class Globe3DEngine {
 
   // _getContinentPolygons and _drawBiomes removed — replaced by _buildEarthFallback above
   _buildAtmosphere() {
-    // Inner atmosphere — soft blue haze on the day side limb
-    const atmoGeo = new THREE.SphereGeometry(1.025, 64, 64);
+    // ── Layer 1: Inner atmosphere (soft blue haze on day side) ──
+    const atmoGeo = new THREE.SphereGeometry(1.028, 96, 96);
     const atmoMat = new THREE.MeshPhongMaterial({
-      color: 0x2255cc,
+      color: 0x2266dd,
       transparent: true,
-      opacity: 0.07,
+      opacity: 0.09,
       side: THREE.FrontSide,
       depthWrite: false,
     });
     this.atmosphere = new THREE.Mesh(atmoGeo, atmoMat);
     this.scene.add(this.atmosphere);
 
-    // Outer glow halo (backside so it appears as limb glow)
-    const haloGeo = new THREE.SphereGeometry(1.09, 64, 64);
+    // ── Layer 2: Outer glow halo (limb glow shader) ──
+    const haloGeo = new THREE.SphereGeometry(1.095, 96, 96);
     const haloMat = new THREE.ShaderMaterial({
-      uniforms: { c: {value: 0.35}, p: {value: 4.5}, glowColor: {value: new THREE.Color(0x1166cc)} },
+      uniforms: {
+        c: {value: 0.38},
+        p: {value: 4.8},
+        glowColor: {value: new THREE.Color(0x1177dd)}
+      },
       vertexShader: `
         varying float intensity;
         void main() {
           vec3 vNormal = normalize(normalMatrix * normal);
-          vec3 vNormel = normalize(normalMatrix * vec3(0.0,0.0,1.0));
-          intensity = pow(clamp(1.0 - dot(vNormal, vNormel), 0.0, 1.0), 5.5) * 0.9;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+          vec3 vNormel = normalize(normalMatrix * vec3(0.0, 0.0, 1.0));
+          intensity = pow(clamp(1.0 - dot(vNormal, vNormel), 0.0, 1.0), 5.8) * 0.95;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         }`,
       fragmentShader: `
         uniform vec3 glowColor;
         varying float intensity;
         void main() {
-          gl_FragColor = vec4(glowColor * intensity, intensity * 0.55);
+          gl_FragColor = vec4(glowColor * intensity, intensity * 0.6);
         }`,
       side: THREE.BackSide,
       blending: THREE.AdditiveBlending,
@@ -2085,23 +2194,25 @@ class Globe3DEngine {
     const halo = new THREE.Mesh(haloGeo, haloMat);
     this.scene.add(halo);
 
-    // Far outer glow ring
-    const outerGeo = new THREE.SphereGeometry(1.18, 32, 32);
+    // ── Layer 3: Far outer glow ring (subtle space effect) ──
+    const outerGeo = new THREE.SphereGeometry(1.22, 64, 64);
     const outerMat = new THREE.ShaderMaterial({
-      uniforms: { glowColor: {value: new THREE.Color(0x0033aa)} },
+      uniforms: {
+        glowColor: {value: new THREE.Color(0x0044bb)}
+      },
       vertexShader: `
         varying float intensity;
         void main() {
           vec3 vNormal = normalize(normalMatrix * normal);
-          vec3 vNormel = normalize(normalMatrix * vec3(0.0,0.0,1.0));
-          intensity = pow(clamp(1.0 - dot(vNormal, vNormel), 0.0, 1.0), 7.0) * 0.4;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+          vec3 vNormel = normalize(normalMatrix * vec3(0.0, 0.0, 1.0));
+          intensity = pow(clamp(1.0 - dot(vNormal, vNormel), 0.0, 1.0), 8.0) * 0.5;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         }`,
       fragmentShader: `
         uniform vec3 glowColor;
         varying float intensity;
         void main() {
-          gl_FragColor = vec4(glowColor, intensity);
+          gl_FragColor = vec4(glowColor, intensity * 0.4);
         }`,
       side: THREE.BackSide,
       blending: THREE.AdditiveBlending,
@@ -2109,6 +2220,33 @@ class Globe3DEngine {
       depthWrite: false,
     });
     this.scene.add(new THREE.Mesh(outerGeo, outerMat));
+
+    // ── Layer 4: Very subtle exosphere (faint outer boundary) ──
+    const exoGeo = new THREE.SphereGeometry(1.35, 48, 48);
+    const exoMat = new THREE.ShaderMaterial({
+      uniforms: {
+        glowColor: {value: new THREE.Color(0x002266)}
+      },
+      vertexShader: `
+        varying float intensity;
+        void main() {
+          vec3 vNormal = normalize(normalMatrix * normal);
+          vec3 vNormel = normalize(normalMatrix * vec3(0.0, 0.0, 1.0));
+          intensity = pow(clamp(1.0 - dot(vNormal, vNormel), 0.0, 1.0), 10.0) * 0.25;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }`,
+      fragmentShader: `
+        uniform vec3 glowColor;
+        varying float intensity;
+        void main() {
+          gl_FragColor = vec4(glowColor, intensity * 0.2);
+        }`,
+      side: THREE.BackSide,
+      blending: THREE.AdditiveBlending,
+      transparent: true,
+      depthWrite: false,
+    });
+    this.scene.add(new THREE.Mesh(exoGeo, exoMat));
   }
 
   latLonToVector3(lat, lon, radius = 1.01) {
@@ -2127,47 +2265,110 @@ class Globe3DEngine {
     if (!coord) return;
     const sev = event._severity || getSeverity(event);
     const colorHex = {critical:0xf85149, high:0xff9800, moderate:0xd29922, info:0x00d4ff}[sev] || 0x8b949e;
-    const ringSize = {critical:0.042, high:0.034, moderate:0.026, info:0.018}[sev] || 0.018;
+    const ringSize = {critical:0.044, high:0.036, moderate:0.028, info:0.020}[sev] || 0.020;
 
     const group = new THREE.Group();
+    // Position marker EXACTLY on surface (radius 1.0)
     const pos = this.latLonToVector3(coord.lat, coord.lon, 1.0);
-    // Orient group so Y-axis points away from globe center
     group.position.copy(pos);
-    group.lookAt(new THREE.Vector3(0, 0, 0));
-    group.rotateX(Math.PI);
+    
+    // Orient group: make local -Z axis point toward globe center
+    // so children sitting at positive Z appear "above" the surface
+    const centerVec = new THREE.Vector3(0, 0, 0);
+    group.lookAt(centerVec);
+    group.rotateX(Math.PI); // Flip so marker elements point outward
 
-    // Core dot
-    const dotGeo = new THREE.SphereGeometry(ringSize * 0.45, 10, 10);
-    const dotMat = new THREE.MeshBasicMaterial({color: colorHex});
+    // Core dot with enhanced visuals
+    const dotGeo = new THREE.SphereGeometry(ringSize * 0.48, 16, 16);
+    const dotMat = new THREE.MeshBasicMaterial({
+      color: colorHex,
+      transparent: true,
+      opacity: 0.95
+    });
     const dot = new THREE.Mesh(dotGeo, dotMat);
-    dot.position.z = -ringSize * 0.1;
+    dot.position.z = 0; // Sitting right on surface
     group.add(dot);
 
-    // Flat ring (pulse ring lying on surface)
-    const ringGeo = new THREE.RingGeometry(ringSize * 0.55, ringSize * 0.75, 24);
-    const ringMat = new THREE.MeshBasicMaterial({color: colorHex, side: THREE.DoubleSide, transparent: true, opacity: 0.8});
+    // Inner glow sphere
+    const glowGeo = new THREE.SphereGeometry(ringSize * 0.65, 16, 16);
+    const glowMat = new THREE.MeshBasicMaterial({
+      color: colorHex,
+      transparent: true,
+      opacity: 0.3,
+      depthWrite: false,
+    });
+    const glow = new THREE.Mesh(glowGeo, glowMat);
+    glow.position.z = 0;
+    group.add(glow);
+
+    // Flat ring (pulse ring lying flush on surface)
+    const ringGeo = new THREE.RingGeometry(ringSize * 0.7, ringSize * 0.82, 32);
+    const ringMat = new THREE.MeshBasicMaterial({
+      color: colorHex,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.75,
+      depthWrite: false,
+    });
     const ring = new THREE.Mesh(ringGeo, ringMat);
-    ring.position.z = -0.001;
+    ring.position.z = 0.001; // Slightly above surface to prevent z-fighting
     group.add(ring);
 
-    // For critical/high: second outer ring
+    // For critical/high: second outer ring with gradient effect
     if (sev === 'critical' || sev === 'high') {
-      const outerRingGeo = new THREE.RingGeometry(ringSize * 0.85, ringSize * 0.95, 24);
-      const outerRingMat = new THREE.MeshBasicMaterial({color: colorHex, side: THREE.DoubleSide, transparent: true, opacity: 0.4});
+      const outerRingGeo = new THREE.RingGeometry(ringSize * 0.90, ringSize * 1.05, 32);
+      const outerRingMat = new THREE.MeshBasicMaterial({
+        color: colorHex,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.35,
+        depthWrite: false,
+      });
       const outerRing = new THREE.Mesh(outerRingGeo, outerRingMat);
-      outerRing.position.z = -0.001;
+      outerRing.position.z = 0.001;
       group.add(outerRing);
     }
 
-    group.userData = {event, sev, colorHex, ringSize, baseScale:1.0, phase: Math.random() * Math.PI * 2};
-    // Store dot ref for raycasting
-    dot.userData = {event, sev};
+    // For critical events: add third ring for extra emphasis
+    if (sev === 'critical') {
+      const warningRingGeo = new THREE.RingGeometry(ringSize * 1.15, ringSize * 1.25, 32);
+      const warningRingMat = new THREE.MeshBasicMaterial({
+        color: 0xff0000,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.2,
+        depthWrite: false,
+      });
+      const warningRing = new THREE.Mesh(warningRingGeo, warningRingMat);
+      warningRing.position.z = 0.001;
+      group.add(warningRing);
+    }
+
+    group.userData = {
+      event,
+      sev,
+      colorHex,
+      ringSize,
+      baseScale: 1.0,
+      phase: Math.random() * Math.PI * 2,
+      coord: coord // Store coordinates for reference
+    };
+    
+    // Store event reference on all children for raycasting
+    group.children.forEach(child => {
+      child.userData = {event, sev};
+    });
+    
     this.markerGroup.add(group);
     this.markers.push(group);
 
     // Keep max 400 markers
     if (this.markers.length > 400) {
       const old = this.markers.shift();
+      old.children.forEach(child => {
+        if (child.geometry) child.geometry.dispose();
+        if (child.material) child.material.dispose();
+      });
       this.markerGroup.remove(old);
     }
   }
@@ -2200,41 +2401,104 @@ class Globe3DEngine {
       this.currentRotY += this.rotationSpeed;
     }
 
-    // Lerp globe towards current target (smooth drag + auto-rotate)
-    this.globe.rotation.y += (this.currentRotY - this.globe.rotation.y) * 0.12;
-    this.globe.rotation.x += (this.targetRotX - this.globe.rotation.x) * 0.12;
+    // Lerp globe towards current target with smooth easing
+    const rotLerp = 0.14; // Slightly smoother
+    this.globe.rotation.y += (this.currentRotY - this.globe.rotation.y) * rotLerp;
+    this.globe.rotation.x += (this.targetRotX - this.globe.rotation.x) * rotLerp;
 
     // Atmosphere perfectly tracks globe
-    this.atmosphere.rotation.y = this.globe.rotation.y;
-    this.atmosphere.rotation.x = this.globe.rotation.x;
+    if (this.atmosphere) {
+      this.atmosphere.rotation.y = this.globe.rotation.y;
+      this.atmosphere.rotation.x = this.globe.rotation.x;
+    }
+
+    // Clouds drift independently
+    if (this.clouds && this.cloudDrift) {
+      this.clouds.rotation.y += 0.00015; // Slightly faster drift
+      this.clouds.rotation.x = this.globe.rotation.x; // Match latitude tilt
+    }
 
     // Marker group tracks globe rotation
     this.markerGroup.rotation.y = this.globe.rotation.y;
     this.markerGroup.rotation.x = this.globe.rotation.x;
 
-    // Pulse markers
+    // Enhanced marker pulsing animations
     const t = Date.now() * 0.0025;
     this.markers.forEach(g => {
       const {sev, phase, ringSize} = g.userData;
+      
       if (sev === 'critical') {
-        const pulse = 1.0 + 0.35 * Math.abs(Math.sin(t * 1.8 + phase));
+        // Aggressive pulsing for critical events
+        const pulse = 1.0 + 0.4 * Math.abs(Math.sin(t * 2.0 + phase));
+        const breathe = 1.0 + 0.15 * Math.sin(t * 1.5 + phase);
+        
         g.children.forEach((child, i) => {
-          if (i === 0) child.scale.setScalar(1 + 0.2 * Math.abs(Math.sin(t * 2 + phase)));
-          else if (i === 1) { child.material.opacity = 0.5 + 0.4 * Math.abs(Math.sin(t * 1.8 + phase)); child.scale.setScalar(pulse); }
-          else if (i === 2) { child.material.opacity = 0.2 + 0.3 * Math.abs(Math.sin(t * 1.4 + phase)); child.scale.setScalar(1.0 + 0.5 * Math.abs(Math.sin(t * 1.2 + phase))); }
+          if (i === 0) { // Core dot
+            child.scale.setScalar(1 + 0.25 * Math.abs(Math.sin(t * 2.2 + phase)));
+          } else if (i === 1) { // Inner glow
+            child.material.opacity = 0.2 + 0.3 * Math.abs(Math.sin(t * 1.8 + phase));
+            child.scale.setScalar(breathe * 1.1);
+          } else if (i === 2) { // Inner ring
+            child.material.opacity = 0.6 + 0.3 * Math.abs(Math.sin(t * 2.0 + phase));
+            child.scale.setScalar(pulse);
+          } else if (i === 3) { // Outer ring
+            child.material.opacity = 0.25 + 0.25 * Math.abs(Math.sin(t * 1.6 + phase));
+            child.scale.setScalar(1.0 + 0.6 * Math.abs(Math.sin(t * 1.4 + phase)));
+          } else if (i === 4) { // Warning ring
+            child.material.opacity = 0.1 + 0.2 * Math.abs(Math.sin(t * 1.2 + phase));
+            child.scale.setScalar(1.0 + 0.8 * Math.abs(Math.sin(t + phase)));
+          }
         });
       } else if (sev === 'high') {
-        const pulse = 1.0 + 0.2 * Math.abs(Math.sin(t * 1.2 + phase));
+        // Moderate pulsing for high severity
+        const pulse = 1.0 + 0.25 * Math.abs(Math.sin(t * 1.5 + phase));
+        const breathe = 1.0 + 0.1 * Math.sin(t * 1.2 + phase);
+        
         g.children.forEach((child, i) => {
-          if (i === 1) { child.material.opacity = 0.5 + 0.3 * Math.abs(Math.sin(t * 1.2 + phase)); child.scale.setScalar(pulse); }
-          else if (i === 2) { child.material.opacity = 0.15 + 0.2 * Math.abs(Math.sin(t * 0.9 + phase)); }
+          if (i === 0) { // Core dot
+            child.scale.setScalar(1 + 0.15 * Math.abs(Math.sin(t * 1.6 + phase)));
+          } else if (i === 1) { // Inner glow
+            child.material.opacity = 0.2 + 0.2 * Math.abs(Math.sin(t * 1.4 + phase));
+            child.scale.setScalar(breathe);
+          } else if (i === 2) { // Inner ring
+            child.material.opacity = 0.6 + 0.25 * Math.abs(Math.sin(t * 1.5 + phase));
+            child.scale.setScalar(pulse);
+          } else if (i === 3) { // Outer ring
+            child.material.opacity = 0.2 + 0.2 * Math.abs(Math.sin(t * 1.1 + phase));
+            child.scale.setScalar(1.0 + 0.4 * Math.abs(Math.sin(t * 0.9 + phase)));
+          }
+        });
+      } else if (sev === 'moderate') {
+        // Gentle pulsing for moderate events
+        const pulse = 1.0 + 0.15 * Math.abs(Math.sin(t + phase));
+        
+        g.children.forEach((child, i) => {
+          if (i === 0) { // Core dot
+            child.scale.setScalar(1 + 0.1 * Math.abs(Math.sin(t * 1.1 + phase)));
+          } else if (i === 1) { // Inner glow
+            child.material.opacity = 0.15 + 0.15 * Math.abs(Math.sin(t + phase));
+          } else if (i === 2) { // Ring
+            child.material.opacity = 0.5 + 0.2 * Math.abs(Math.sin(t + phase));
+            child.scale.setScalar(pulse);
+          }
+        });
+      } else {
+        // Subtle pulse for info/low severity
+        const pulse = 1.0 + 0.08 * Math.abs(Math.sin(t * 0.8 + phase));
+        
+        g.children.forEach((child, i) => {
+          if (i === 1) { // Inner glow
+            child.material.opacity = 0.1 + 0.1 * Math.abs(Math.sin(t * 0.8 + phase));
+          } else if (i === 2) { // Ring
+            child.material.opacity = 0.4 + 0.15 * Math.abs(Math.sin(t * 0.8 + phase));
+            child.scale.setScalar(pulse);
+          }
         });
       }
     });
 
-    // Stars slow rotation + cloud drift
+    // Stars slow rotation
     if (this.stars) this.stars.rotation.y += 0.00004;
-    if (this.clouds && this.cloudDrift) this.clouds.rotation.y += 0.00012;
 
     this.renderer.render(this.scene, this.camera);
   }
@@ -2275,15 +2539,32 @@ class Globe3DEngine {
       this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
       this.raycaster.setFromCamera(this.mouse, this.camera);
+      
       // Collect all child meshes from marker groups
       const allChildren = [];
-      this.markers.forEach(g => g.children.forEach(c => allChildren.push(c)));
-      const hits = this.raycaster.intersectObjects(allChildren);
+      this.markers.forEach(g => {
+        g.children.forEach(c => {
+          if (c.geometry) allChildren.push(c);
+        });
+      });
+      
+      // Check intersections
+      const hits = this.raycaster.intersectObjects(allChildren, false);
       if (hits.length > 0) {
         // Walk up to find the group with event data
         let obj = hits[0].object;
-        while (obj && !obj.userData.event) obj = obj.parent;
-        if (obj && obj.userData.event) this._showPopup(obj.userData.event, e.clientX, e.clientY);
+        let attempts = 0;
+        while (obj && !obj.userData.event && obj.parent && attempts < 5) {
+          obj = obj.parent;
+          attempts++;
+        }
+        if (obj && obj.userData && obj.userData.event) {
+          this._showPopup(obj.userData.event, e.clientX, e.clientY);
+        }
+      } else {
+        // Click on empty space - hide popup
+        const popup = document.getElementById('globePopup');
+        if (popup) popup.style.display = 'none';
       }
     });
     // Touch
@@ -3918,7 +4199,7 @@ const App = {
 
     // Globe controls
     document.getElementById('btnGlobeRotate')?.addEventListener('click',function(){Globe3D.toggleRotation();this.classList.toggle('active');});
-    document.getElementById('btnGlobeReset')?.addEventListener('click',()=>{Globe3D.camera.position.z=2.5;Globe3D.targetRotX=0;});
+    document.getElementById('btnGlobeReset')?.addEventListener('click',()=>{Globe3D.camera.position.z=2.4;Globe3D.targetRotX=0;Globe3D.currentRotY=0;});
     document.getElementById('btnGlobeMarkers')?.addEventListener('click',function(){
       State.globeState.markers=!State.globeState.markers;this.classList.toggle('active');
       Globe3D.markerGroup.visible=State.globeState.markers;
@@ -3931,6 +4212,47 @@ const App = {
       if(Globe3D.popupEvent){
         UIManager.openDrawer(Globe3D.popupEvent);
         document.getElementById('globePopup').style.display='none';
+      }
+    });
+
+    // Keyboard shortcuts for globe
+    document.addEventListener('keydown', (e) => {
+      // Only when globe view is active
+      if (State.currentView !== 'globe') return;
+      
+      switch(e.key.toLowerCase()) {
+        case 'r':
+          // Toggle rotation
+          document.getElementById('btnGlobeRotate')?.click();
+          break;
+        case 'm':
+          // Toggle markers
+          document.getElementById('btnGlobeMarkers')?.click();
+          break;
+        case 'h':
+          // Reset/home view
+          document.getElementById('btnGlobeReset')?.click();
+          break;
+        case 'escape':
+          // Close popup
+          document.getElementById('globePopup').style.display='none';
+          break;
+        case '+':
+        case '=':
+          // Zoom in
+          if (Globe3D.camera) {
+            Globe3D.camera.position.z = Math.max(1.5, Globe3D.camera.position.z - 0.2);
+          }
+          e.preventDefault();
+          break;
+        case '-':
+        case '_':
+          // Zoom out
+          if (Globe3D.camera) {
+            Globe3D.camera.position.z = Math.min(5, Globe3D.camera.position.z + 0.2);
+          }
+          e.preventDefault();
+          break;
       }
     });
 
