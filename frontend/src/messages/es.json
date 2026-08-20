@@ -1,0 +1,19 @@
+{
+  "app.title": "GeoAlert — Alertas de crisis",
+  "crisis.title": "GeoAlert Modo Crisis",
+  "crisis.noAlerts": "No hay alertas activas en su área",
+  "alert.severity.extreme": "Extremo",
+  "alert.severity.severe": "Severo",
+  "alert.severity.moderate": "Moderado",
+  "alert.severity.minor": "Menor",
+  "alert.source.official": "Oficial",
+  "alert.source.community": "Comunidad",
+  "alert.freshness.current": "Actual",
+  "alert.freshness.aging": "Envejeciendo",
+  "alert.freshness.stale": "Desactualizado",
+  "alert.action.dismiss": "Descartar",
+  "alert.action.download": "Descargar",
+  "alert.action.share": "Compartir",
+  "offline.banner": "Está sin conexión. Mostrando datos en caché.",
+  "offline.restored": "Conexión restaurada — sincronizando..."
+}
