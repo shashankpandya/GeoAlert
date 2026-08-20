@@ -1,53 +1,28 @@
-# Python
 __pycache__/
 *.py[cod]
 *.pyo
-*.pyd
-.Python
 *.egg-info/
 dist/
 build/
 .env
-*.venv
-venv/
 .venv/
+venv/
 .pytest_cache/
-
-# Node / Next.js
+.mypy_cache/
+.ruff_cache/
 node_modules/
 .next/
 .turbo/
 out/
-
-# Helper scripts (not production code)
-backend/create_classifier.py
-backend/fix_files.py
-backend/update_main.py
-backend/write_backend_batch1.py
-backend/write_parsers.py
-backend/write_sources.py
-backend/gen_migration.py
-frontend/check_a11y.py
-frontend/check_files.py
-frontend/fix_mapview.py
-frontend/write_components.py
-frontend/write_components2.py
-frontend/write_components3.py
-frontend/write_unit_tests.py
-frontend/complete_84_102.py
-ci_writer.py
-write_ci.py
-
-# Logs
 *.log
-npm-debug.log*
 backend-dev.log
 frontend-dev.log
-
-# IDE
 .vscode/
 .idea/
-
-# OS
 .DS_Store
 Thumbs.db
+frontend/playwright-report/
+frontend/test-results/
+frontend/coverage/
+backend/.coverage
+backend/htmlcov/
