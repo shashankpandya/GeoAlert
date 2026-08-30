@@ -1,146 +1,91 @@
-# Weather App ⛅
+# GeoAlert
 
-A simple and beautiful weather application built with HTML, CSS, and JavaScript. Get real-time weather information for any city worldwide using the OpenWeather API.
-
-## Features ✨
-
-- **Real-time Weather Data**: Get current weather information for any city
-- **Weather Icons**: Dynamic weather icons based on current conditions
-- **Detailed Information**: Display temperature, humidity, and wind speed
-- **Error Handling**: Clear error messages for invalid city names
-- **Responsive Design**: Works on desktop and mobile devices
-- **Quick Search**: Search by pressing Enter or clicking the search button
-- **Beautiful UI**: Modern gradient design with smooth interactions
-
-## Weather Conditions Supported 🌦️
-
-- ☁️ Clouds
-- 🌧️ Rain
-- ☀️ Clear
-- 🌦️ Drizzle
-- 🌫️ Mist
-
-## How to Use 🚀
-
-1. **Clone the Repository**
-
-   ```bash
-   git clone https://github.com/shashankpandya/Weather_app
-   cd Weather_app
-   ```
-
-2. **Open in Browser**
-   - Simply open `Weather.html` in your web browser
-   - Or use a local server:
-
-     ```bash
-     # Using Python 3
-     python -m http.server 8000
-
-     # Using Python 2
-     python -m SimpleHTTPServer 8000
-
-     # Using Node.js (with http-server)
-     npx http-server
-     ```
-
-3. **Enter a City Name**
-   - Type any city name in the search box
-   - Press Enter or click the search button
-   - View the current weather information
-
-## Live Preview 🌐
-
-Try the app directly without downloading:
-
-- **GitHub Pages**: [View Live Demo](https://shashankpandya.github.io/Weather_app/)
-- **JSFiddle Alternative**: Copy the HTML, CSS, and JS files to create your own preview
-- **Local**: Open `Weather.html` directly in your browser
-
-## API Used 🔌
-
-- **Open Weather Map API**: Free tier for current weather data
-- **Endpoint**: `https://api.openweathermap.org/data/2.5/weather`
-- **API Key**: Included (replace with your own for production)
-
-## File Structure 📁
-
-```
-Weather_app/
-├── Weather.html      # Main HTML structure
-├── Weather.css       # Styling and layout
-├── Weather.js        # Weather logic and API calls
-└── README.md         # Documentation
-```
-
-## Bug Fixes & Improvements ✅
-
-- ✅ Fixed case-sensitivity bug in weather condition checking ("clear" → "Clear")
-- ✅ Removed incorrect DOM selector that caused errors
-- ✅ Added Enter key support for search
-- ✅ Added input validation (empty field checking)
-- ✅ Fixed duplicate CSS rules for heading styles
-- ✅ Improved error handling
-
-## Customization 🎨
-
-### Change API Key
-
-Replace the API key in `Weather.js`:
-
-```javascript
-const apiKey = "YOUR_API_KEY_HERE";
-```
-
-Get your free API key from [OpenWeatherMap](https://openweathermap.org/api)
-
-### Modify Colors
-
-Edit the gradient in `Weather.css`:
-
-```css
-background: linear-gradient(135deg, #00feba, #5b548a);
-```
-
-### Add More Weather Conditions
-
-Add more conditions in the `checkWeather()` function in `Weather.js`
-
-## Troubleshooting 🔧
-
-| Issue                     | Solution                                                               |
-| ------------------------- | ---------------------------------------------------------------------- |
-| "Invalid city name" error | Make sure you're typing a valid city name (e.g., "London", "New York") |
-| Icons not loading         | Check your internet connection; icons are loaded from CDN              |
-| API not responding        | Verify your API key is valid and has free tier access                  |
-| Search not working        | Clear browser cache or try a different city name                       |
-
-## Browser Support 🌍
-
-- ✅ Chrome
-- ✅ Firefox
-- ✅ Safari
-- ✅ Edge
-- ✅ Mobile browsers
-
-## Future Enhancements 🚀
-
-- [ ] 5-day weather forecast
-- [ ] Weather history/trending
-- [ ] Multiple city comparison
-- [ ] Temperature unit toggle (°C/°F)
-- [ ] Dark/Light mode
-- [ ] Geolocation support
-- [ ] Weather alerts
-
-## License 📄
-
-This project is open source and available under the MIT License.
-
-## Author 👨‍💻
-
-Created by [Shashank Pandya](https://github.com/shashankpandya)
+Emergency alert platform with two versions in this repository.
 
 ---
 
-**Enjoy exploring the weather! 🌤️**
+## Version 1 — Earth Pulse (Classic)
+
+Original static platform. No build step, no server required.
+
+| File | Description |
+|------|-------------|
+| `index.html` | Main entry — Earth Pulse v4 interactive globe |
+| `EarthPulse.html` | Alternative entry point |
+| `app.js` / `app.css` | Core application code |
+| `modules/` | Feature modules: climate, geography, spaceweather, weather |
+| `Weather.html` | Standalone weather widget |
+| `DEPLOYMENT.md` | Vercel deployment notes |
+| `GLOBE_GUIDE.md` | Globe feature guide |
+| `AUDIT.md` | Code audit notes |
+| `CHANGELOG_GLOBE.md` | Globe changelog |
+| `IMPROVEMENTS.md` | Improvement plan notes |
+
+**Run locally:** Open `index.html` in any browser — zero install.
+
+**Live:** https://geoalert-natural-events-hub.vercel.app/classic/
+
+---
+
+## Version 2 — GeoAlert v2 (Full-stack)
+
+Safety-first crisis response platform. Production-ready.
+
+```
+geoalert-v2/
+  frontend/    Next.js 16 App Router, TypeScript, MapLibre GL, Tailwind CSS
+  backend/     FastAPI, PostgreSQL/PostGIS (Neon), Redis (Upstash), Celery
+  .github/     CI/CD workflows
+```
+
+See [geoalert-v2/README.md](geoalert-v2/README.md) for full setup instructions.
+
+Quick start:
+```bash
+# Backend
+cd geoalert-v2/backend
+cp .env.example .env      # fill in your Neon + Upstash credentials
+pip install -r requirements.txt
+alembic upgrade head
+uvicorn app.main:app --reload
+
+# Frontend
+cd geoalert-v2/frontend
+npm install
+npm run dev               # http://localhost:3000
+```
+
+---
+
+## Repository structure
+
+```
+GeoAlert/
+|
+|-- index.html              Earth Pulse v1 (classic — open in browser)
+|-- EarthPulse.html
+|-- app.js / app.css
+|-- modules/               Classic feature modules
+|-- Weather.html/css/js    Standalone weather widget
+|-- vercel.json            Vercel config for classic deployment
+|-- DEPLOYMENT.md
+|-- AUDIT.md
+|-- CHANGELOG_GLOBE.md
+|-- GLOBE_GUIDE.md
+|-- IMPROVEMENTS.md
+|
+|-- geoalert-v2/           GeoAlert v2 full-stack platform
+|   |-- frontend/          Next.js 16 frontend
+|   |-- backend/           FastAPI backend
+|   `-- .github/workflows/ CI/CD pipelines
+|
+|-- .kiro/specs/           Feature specs (requirements, design, tasks)
+|-- .vscode/               Editor configuration
+`-- README.md              This file
+```
+
+---
+
+## Author
+
+[Shashank Pandya](https://github.com/shashankpandya)
