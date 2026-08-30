@@ -9,19 +9,23 @@ interface OfflineIndicatorProps {
 }
 
 export function useOnlineStatus(): boolean {
-  const [isOnline, setIsOnline] = useState(
-    typeof navigator !== 'undefined' ? navigator.onLine : true
-  );
+  // Always start as true (matches server render), then sync after mount
+  const [isOnline, setIsOnline] = useState(true);
+
   useEffect(() => {
-    const setOnline = () => setIsOnline(true);
-    const setOffline = () => setIsOnline(false);
-    window.addEventListener('online', setOnline);
-    window.addEventListener('offline', setOffline);
+    // Sync actual value after hydration
+    setIsOnline(navigator.onLine);
+
+    const goOnline = () => setIsOnline(true);
+    const goOffline = () => setIsOnline(false);
+    window.addEventListener('online', goOnline);
+    window.addEventListener('offline', goOffline);
     return () => {
-      window.removeEventListener('online', setOnline);
-      window.removeEventListener('offline', setOffline);
+      window.removeEventListener('online', goOnline);
+      window.removeEventListener('offline', goOffline);
     };
   }, []);
+
   return isOnline;
 }
 
@@ -29,24 +33,33 @@ export function OfflineIndicator({ lastSyncTime, staleAlertCount = 0 }: OfflineI
   const isOnline = useOnlineStatus();
   const [syncing, setSyncing] = useState(false);
   const [justRestored, setJustRestored] = useState(false);
+  // Track previous value to detect online restoration
+  const [prevOnline, setPrevOnline] = useState(true);
 
   useEffect(() => {
-    if (isOnline && !syncing) {
-      setSyncing(true);
+    if (isOnline && !prevOnline) {
+      // Just came back online
       setJustRestored(true);
+      setSyncing(true);
       processSyncQueue().finally(() => {
         setSyncing(false);
         setTimeout(() => setJustRestored(false), 3000);
       });
     }
-  }, [isOnline]); // eslint-disable-line
+    setPrevOnline(isOnline);
+  }, [isOnline]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Hide when online and not showing restoration toast
   if (isOnline && !justRestored) return null;
 
   const bgColor = isOnline ? '#15803d' : '#b45309';
   const message = isOnline
     ? syncing ? 'Connection restored — syncing...' : 'Back online!'
-    : `Offline${lastSyncTime ? ` — cached data from ${new Date(lastSyncTime).toLocaleTimeString()}` : ''}${staleAlertCount > 0 ? ` (${staleAlertCount} stale alerts)` : ''}`;
+    : `Offline${
+        lastSyncTime ? ` — cached data from ${new Date(lastSyncTime).toLocaleTimeString()}` : ''
+      }${
+        staleAlertCount > 0 ? ` (${staleAlertCount} stale alerts)` : ''
+      }`;
 
   return (
     <div
