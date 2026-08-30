@@ -6,11 +6,11 @@ from typing import List, Optional
 class Settings(BaseSettings):
     model_config = ConfigDict(env_file='.env', case_sensitive=True, extra='ignore')
 
-    # Neon PostgreSQL (asyncpg for app, psycopg2 for migrations)
+    # PostgreSQL
     DATABASE_URL: str = 'postgresql+asyncpg://postgres:postgres@localhost:5432/geoalert'
     DATABASE_URL_POOLED: Optional[str] = None
 
-    # Redis - OPTIONAL, rate limiting disabled if not reachable
+    # Redis (supports rediss:// for Upstash TLS)
     REDIS_URL: str = 'redis://localhost:6379/0'
 
     # Security
@@ -22,22 +22,23 @@ class Settings(BaseSettings):
     CORS_ORIGINS: List[str] = ['http://localhost:3000']
     NEON_MODE: bool = False
 
+    @property
+    def redis_is_tls(self) -> bool:
+        return self.REDIS_URL.startswith('rediss://')
+
     def model_post_init(self, __context) -> None:
         if 'neon.tech' in self.DATABASE_URL:
-            if 'ssl=' not in self.DATABASE_URL:
+            if 'ssl=' not in self.DATABASE_URL and 'sslmode' not in self.DATABASE_URL:
                 object.__setattr__(self, 'DATABASE_URL', self.DATABASE_URL + '?ssl=require')
             object.__setattr__(self, 'NEON_MODE', True)
 
     def get_sync_url(self) -> str:
-        '''Return a synchronous psycopg2 URL for Alembic migrations.'''
-        # Prefer the pooled URL if provided
         if self.DATABASE_URL_POOLED:
             url = self.DATABASE_URL_POOLED
         else:
             url = self.DATABASE_URL
-        # Strip asyncpg driver prefix
         url = url.replace('postgresql+asyncpg://', 'postgresql://')
-        # Neon channel_binding not supported by psycopg2 — strip it
+        # strip channel_binding (not supported by psycopg2)
         if 'channel_binding' in url:
             parts = url.split('?', 1)
             if len(parts) == 2:

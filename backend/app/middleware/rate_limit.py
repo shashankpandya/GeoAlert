@@ -8,7 +8,7 @@ from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-WRITE_PATHS = {"/api/alerts/ingest", "/api/sources/classify", "/api/user/delete"}
+WRITE_PATHS = {'/api/alerts/ingest', '/api/sources/classify', '/api/user/delete'}
 READ_LIMIT = 100
 WRITE_LIMIT = 10
 WINDOW = 60
@@ -23,21 +23,30 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     async def _get_redis(self):
         if self._redis is None:
             try:
-                self._redis = aioredis.from_url(self._redis_url, decode_responses=True)
-            except Exception:
+                # Upstash uses rediss:// (TLS) - pass ssl_cert_reqs=None to allow
+                kwargs = {'decode_responses': True}
+                if self._redis_url.startswith('rediss://'):
+                    kwargs['ssl_cert_reqs'] = None
+                self._redis = aioredis.from_url(self._redis_url, **kwargs)
+                # Test connection
+                await self._redis.ping()
+                logger.info('Redis connected: %s', self._redis_url[:40])
+            except Exception as e:
+                logger.warning('Redis unavailable (%s) - rate limiting disabled', e)
+                self._redis = None
                 return None
         return self._redis
 
     async def dispatch(self, request: Request, call_next):
-        admin_key = request.headers.get("X-Admin-Key")
-        if admin_key:
+        # Admin key bypasses rate limiting
+        if request.headers.get('X-Admin-Key'):
             return await call_next(request)
 
-        client_ip = request.client.host if request.client else "unknown"
+        client_ip = request.client.host if request.client else 'unknown'
         path = request.url.path
         is_write = any(path.startswith(p) for p in WRITE_PATHS)
         limit = WRITE_LIMIT if is_write else READ_LIMIT
-        key = f"rl:{client_ip}:{path}:{int(time.time() // WINDOW)}"
+        key = f'rl:{client_ip}:{path}:{int(time.time() // WINDOW)}'
 
         redis = await self._get_redis()
         if redis:
@@ -46,15 +55,15 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 if count == 1:
                     await redis.expire(key, WINDOW)
                 if count > limit:
-                    logger.warning(f"Rate limit exceeded: {client_ip} {path} ({count}/{limit})")
+                    logger.warning('Rate limit: %s %s (%d/%d)', client_ip, path, count, limit)
                     raise HTTPException(
                         status_code=429,
-                        detail={"code": "RATE_LIMIT_EXCEEDED", "message": f"Too many requests. Retry after {WINDOW}s."},
-                        headers={"Retry-After": str(WINDOW)},
+                        detail={'code': 'RATE_LIMIT_EXCEEDED', 'message': f'Too many requests. Retry after {WINDOW}s.'},
+                        headers={'Retry-After': str(WINDOW)},
                     )
             except HTTPException:
                 raise
             except Exception:
-                pass
+                pass  # Redis error - continue without rate limiting
 
         return await call_next(request)
