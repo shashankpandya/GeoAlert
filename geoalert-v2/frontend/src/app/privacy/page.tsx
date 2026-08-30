@@ -84,7 +84,7 @@ export default function PrivacyPage() {
       <section aria-labelledby="actions-heading" className="ga-card" style={{ padding: '20px 24px', marginTop: 24 }}>
         <h2 id="actions-heading" style={{ fontSize: '1rem', fontWeight: 700, marginBottom: 16 }}>Data Controls</h2>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <a href="http://localhost:8000/api/user/export" className="ga-btn ga-btn-primary ga-btn-lg">
+          <a href={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/user/export`} className="ga-btn ga-btn-primary ga-btn-lg">
             ⬇ Export My Data
           </a>
           <button

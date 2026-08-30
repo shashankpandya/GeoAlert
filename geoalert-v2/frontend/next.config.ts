@@ -1,13 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Redirect /classic -> /classic/ so the static HTML is served correctly
-  async redirects() {
-    return [
-      { source: "/classic", destination: "/classic/", permanent: true },
-    ];
-  },
-
   async headers() {
     return [
       // Classic version — no strict CSP (loads external CDN scripts + tiles)
@@ -33,7 +26,7 @@ const nextConfig: NextConfig = {
               // img-src: allow OSM tiles from ALL valid origins MapLibre uses
               "img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://*.openstreetmap.org",
               // connect-src: allow API + tile downloads
-              "connect-src 'self' http://localhost:8000 https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://*.openstreetmap.org",
+              "connect-src 'self' http://localhost:8000 https://geoalert-1.onrender.com https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://*.openstreetmap.org",
               "worker-src 'self' blob:",
               "frame-ancestors 'none'",
             ].join("; "),
