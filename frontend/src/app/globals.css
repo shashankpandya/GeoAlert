@@ -350,3 +350,33 @@ button, a, input, select, textarea { min-height: 36px; }
   body { overflow-x: hidden; }
   .ga-nav { padding: 0 12px; gap: 4px; }
 }
+
+/* ── Feature card ──────────────────────────────────── */
+.ga-feature-card {
+  padding: 22px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+}
+.ga-feature-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
+}
+
+/* ── Pulse dot animation ────────────────────────────── */
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.4); opacity: 0.6; }
+}
+
+/* ── color-mix fallback for older browsers ─────────── */
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+  .ga-nav { background: var(--surface-1); }
+}
+
+/* ── Responsive hero ───────────────────────────────── */
+@media (max-width: 640px) {
+  #main-content { overflow-x: hidden; }
+}

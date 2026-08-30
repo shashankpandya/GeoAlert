@@ -1,185 +1,254 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = { title: 'GeoAlert — Safety-first crisis alerts' };
+export const metadata: Metadata = {
+  title: 'GeoAlert — Real-time Emergency Alerts',
+  description: 'Safety-first crisis response platform with official source verification, offline resilience, and WCAG 2.2 AA accessibility.',
+};
 
-const FEATURES = [
-  { icon: '📡', title: 'Official Sources', desc: 'NWS, FEMA, and .gov verified feeds with provenance badges and multi-layer authentication.' },
-  { icon: '📴', title: 'Offline-First', desc: 'Service Worker + IndexedDB persist alerts locally. Full functionality during network outages.' },
-  { icon: '♿', title: 'WCAG 2.2 AA', desc: 'Full keyboard navigation, screen reader support, and 400% zoom compliance throughout.' },
-  { icon: '🔒', title: 'Privacy by Design', desc: 'Location rounded to ±1km. Zero precise GPS coordinates stored or transmitted.' },
+const MOCK_ALERTS = [
+  { sev: 'extreme', label: 'EXTREME', event: 'Tornado Warning',        area: 'Oklahoma County, OK',       age: '2m',  src: 'Official' },
+  { sev: 'severe',  label: 'SEVERE',  event: 'Flash Flood Watch',      area: 'Harris County, TX',          age: '18m', src: 'Official' },
+  { sev: 'moderate',label: 'MOD',     event: 'Winter Storm Advisory',  area: 'Denver Metro, CO',           age: '1h',  src: 'Official' },
+  { sev: 'minor',   label: 'MINOR',   event: 'Dense Fog Advisory',     area: 'San Francisco Bay, CA',      age: '2h',  src: 'Community' },
 ];
 
-const STATS = [
-  { value: '<100KB', label: 'Crisis mode payload' },
-  { value: '2min',   label: 'Alert refresh interval' },
-  { value: '4',      label: 'Severity levels tracked' },
-  { value: '100%',   label: 'Offline capable' },
+const SEV_COLORS: Record<string, { dot: string; text: string; bg: string; border: string }> = {
+  extreme:  { dot: '#dc2626', text: '#dc2626', bg: '#fef2f2',  border: '#fecaca' },
+  severe:   { dot: '#ea580c', text: '#ea580c', bg: '#fff7ed',  border: '#fed7aa' },
+  moderate: { dot: '#d97706', text: '#b45309', bg: '#fffbeb',  border: '#fde68a' },
+  minor:    { dot: '#16a34a', text: '#15803d', bg: '#f0fdf4',  border: '#bbf7d0' },
+};
+
+const FEATURES = [
+  { icon: '🛡', title: 'Verified Sources',   desc: 'Every alert is tagged: NWS, FEMA, .gov feeds get an Official badge. Community sources are clearly marked.' },
+  { icon: '📡', title: 'Real-Time Updates',  desc: 'Alerts refresh every 2 minutes. Severity, freshness, and expiry are always current.' },
+  { icon: '📴', title: 'Works Offline',      desc: 'Service Worker + IndexedDB. Download a region package and stay informed even without internet.' },
+  { icon: '♿', title: 'Fully Accessible',   desc: 'WCAG 2.2 AA. Keyboard navigation, screen reader support, high contrast mode, 400% zoom.' },
+  { icon: '🔒', title: 'Privacy First',      desc: 'Your location stays on your device. We round coordinates to ±1km and never log GPS data.' },
+  { icon: '⚡', title: 'Crisis Mode',         desc: 'A sub-100KB text-only view that loads on 2G connections when every second counts.' },
 ];
 
 export default function Home() {
   return (
-    <main role="main" style={{ minHeight: 'calc(100vh - 56px)', background: 'var(--bg)' }}>
-      {/* ── Hero ───────────────────────────────────────── */}
-      <section
-        style={{
-          maxWidth: 1200, margin: '0 auto', padding: '72px 24px 64px',
-          display: 'grid',
-          gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1fr)',
-          gap: 48,
-          alignItems: 'center',
-        }}
-      >
-        {/* Left — text */}
+    <div style={{ background: 'var(--bg)', minHeight: 'calc(100vh - 56px)' }}>
+
+      {/* ── HERO ─────────────────────────────────────── */}
+      <section style={{
+        maxWidth: 1200, margin: '0 auto',
+        padding: 'clamp(48px, 8vw, 96px) 24px clamp(40px, 6vw, 72px)',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 460px), 1fr))',
+        gap: 'clamp(32px, 5vw, 64px)',
+        alignItems: 'center',
+      }}>
+
+        {/* Left: hero text */}
         <div>
+          {/* Eyebrow pill */}
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
-            padding: '4px 12px', borderRadius: 'var(--radius-full)',
-            background: 'var(--accent-subtle)', color: 'var(--accent-text)',
-            fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.04em',
-            textTransform: 'uppercase', marginBottom: 20,
-            border: '1px solid var(--accent)',
+            padding: '5px 14px', borderRadius: 'var(--radius-full)',
+            background: 'var(--accent-subtle)',
+            border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)',
+            fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.06em',
+            textTransform: 'uppercase', color: 'var(--accent-text)',
+            marginBottom: 24,
           }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--sev-extreme)', boxShadow: '0 0 0 3px rgba(220,38,38,.15)', display: 'inline-block' }} />
-            Safety-First Emergency Platform
+            <span style={{
+              width: 6, height: 6, borderRadius: '50%',
+              background: '#dc2626',
+              animation: 'pulse-dot 2s ease infinite',
+              display: 'inline-block', flexShrink: 0,
+            }} />
+            Emergency Alert Platform
           </div>
 
           <h1 style={{
-            fontSize: 'clamp(2.2rem, 5vw, 3.5rem)',
-            fontWeight: 900,
-            lineHeight: 1.1,
-            letterSpacing: '-0.03em',
+            fontSize: 'clamp(2.4rem, 5.5vw, 4rem)',
+            fontWeight: 900, lineHeight: 1.05,
+            letterSpacing: '-0.035em',
             color: 'var(--text-primary)',
             marginBottom: 20,
           }}>
             Know the danger.
             <br />
             <span style={{
-              background: 'linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%)',
+              background: 'linear-gradient(120deg, var(--accent), #7c3aed 60%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
-            }}>Act immediately.</span>
+              backgroundClip: 'text',
+            }}>
+              Act immediately.
+            </span>
           </h1>
 
           <p style={{
-            fontSize: '1.125rem', color: 'var(--text-secondary)',
-            lineHeight: 1.7, maxWidth: 520, marginBottom: 36,
+            fontSize: '1.1rem', color: 'var(--text-secondary)',
+            lineHeight: 1.75, maxWidth: 480, marginBottom: 36,
           }}>
-            GeoAlert answers six critical questions in any emergency: Am I in danger? What should I do? Is this official? Where? How current? What if the internet fails?
+            Real-time emergency alerts with official source verification,
+            offline resilience, and crisis mode that works on any connection.
           </p>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 48 }}>
-            <Link href="/crisis" className="ga-btn ga-btn-danger ga-btn-lg"
-              aria-label="Open Crisis Mode — text-only emergency view">
-              ⚠ Crisis Mode
+          {/* CTA buttons */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 44 }}>
+            <Link href="/map" className="ga-btn ga-btn-primary ga-btn-lg" style={{ gap: 8 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+              Live Map
             </Link>
-            <Link href="/map" className="ga-btn ga-btn-primary ga-btn-lg"
-              aria-label="Open interactive alert map">
-              🗺 Live Map
+            <Link href="/crisis" className="ga-btn ga-btn-danger ga-btn-lg" style={{ gap: 8 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              Crisis Mode
             </Link>
             <Link href="/admin" className="ga-btn ga-btn-ghost ga-btn-lg">
-              ⚙ Dashboard
+              Dashboard
             </Link>
           </div>
 
-          {/* Stats row */}
+          {/* Metric row */}
           <div style={{
-            display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16,
+            display: 'flex', gap: 28, flexWrap: 'wrap',
             paddingTop: 24, borderTop: '1px solid var(--border)',
           }}>
-            {STATS.map(s => (
-              <div key={s.label}>
-                <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--accent)', letterSpacing: '-0.02em' }}>
-                  {s.value}
-                </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 2 }}>
-                  {s.label}
-                </div>
+            {[
+              { n: '<100KB', l: 'Crisis payload' },
+              { n: '2 min',  l: 'Refresh rate' },
+              { n: 'WCAG AA',l: 'Accessibility' },
+              { n: 'Offline',l: 'Capable' },
+            ].map(m => (
+              <div key={m.l}>
+                <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--accent)', letterSpacing: '-0.02em', lineHeight: 1.2 }}>{m.n}</div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{m.l}</div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Right — dashboard preview card */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {/* Mock alert feed */}
-          {[
-            { sev: 'extreme', event: 'Tornado Warning', area: 'Oklahoma County, OK', age: '2min ago' },
-            { sev: 'severe',  event: 'Flash Flood Watch', area: 'Harris County, TX', age: '18min ago' },
-            { sev: 'moderate',event: 'Winter Storm Advisory', area: 'Denver Metro, CO', age: '1h ago' },
-            { sev: 'minor',   event: 'Dense Fog Advisory', area: 'San Francisco Bay, CA', age: '2h ago' },
-          ].map((a, i) => (
-            <div
-              key={i}
-              className={`ga-alert-item sev-border-${a.sev} animate-fade-in`}
-              style={{ animationDelay: `${i * 60}ms`, cursor: 'default' }}
-              aria-label={`${a.event} — ${a.area}`}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                <div>
-                  <span className={`ga-badge ga-badge-${a.sev}`} style={{ marginBottom: 4 }}>
-                    {a.sev}
-                  </span>
-                  <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)', marginTop: 2 }}>
-                    {a.event}
-                  </div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 2 }}>
-                    📍 {a.area}
-                  </div>
-                </div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-subtle)', whiteSpace: 'nowrap', marginTop: 2 }}>
-                  {a.age}
-                </div>
-              </div>
-            </div>
-          ))}
-
+        {/* Right: live alert feed preview */}
+        <div style={{
+          background: 'var(--surface-1)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-lg)',
+          overflow: 'hidden',
+          boxShadow: 'var(--shadow-lg)',
+        }}>
+          {/* Panel header */}
           <div style={{
-            textAlign: 'center', padding: '10px 0',
-            fontSize: '0.8rem', color: 'var(--text-muted)',
+            padding: '14px 16px',
+            borderBottom: '1px solid var(--border)',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            background: 'var(--surface-2)',
           }}>
-            Live data from{' '}
-            <Link href="/map" style={{ color: 'var(--accent)', fontWeight: 600 }}>
-              the map →
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{
+                width: 8, height: 8, borderRadius: '50%', background: '#16a34a',
+                boxShadow: '0 0 0 3px rgba(22,163,74,.15)', display: 'inline-block',
+              }} />
+              <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                Live Alerts
+              </span>
+            </div>
+            <span style={{ fontSize: '0.7rem', color: 'var(--text-subtle)', background: 'var(--surface-3)', padding: '2px 8px', borderRadius: 'var(--radius-full)' }}>
+              4 active
+            </span>
+          </div>
+
+          {/* Alert rows */}
+          <div style={{ padding: '8px' }}>
+            {MOCK_ALERTS.map((a, i) => {
+              const c = SEV_COLORS[a.sev];
+              return (
+                <div key={i} style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 12px', borderRadius: 'var(--radius-sm)',
+                  borderLeft: `3px solid ${c.dot}`,
+                  marginBottom: i < MOCK_ALERTS.length - 1 ? 4 : 0,
+                  background: 'var(--surface-1)',
+                  border: `1px solid ${c.border}`,
+                  borderLeftWidth: 3,
+                }}>
+                  <span style={{
+                    fontSize: '0.62rem', fontWeight: 800, color: c.text,
+                    background: c.bg, padding: '2px 6px',
+                    borderRadius: 'var(--radius-full)', whiteSpace: 'nowrap', flexShrink: 0,
+                    letterSpacing: '0.04em',
+                  }}>
+                    {a.label}
+                  </span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {a.event}
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 1 }}>
+                      📍 {a.area}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0, gap: 2 }}>
+                    <span style={{ fontSize: '0.68rem', color: 'var(--text-subtle)' }}>{a.age}</span>
+                    <span style={{ fontSize: '0.62rem', color: a.src === 'Official' ? 'var(--status-online)' : 'var(--text-muted)', fontWeight: 700 }}>
+                      {a.src === 'Official' ? '✓ Official' : '○ Community'}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Panel footer */}
+          <div style={{
+            padding: '12px 16px',
+            borderTop: '1px solid var(--border)',
+            background: 'var(--surface-2)',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          }}>
+            <span style={{ fontSize: '0.72rem', color: 'var(--text-subtle)' }}>
+              Sample data — connect backend for live alerts
+            </span>
+            <Link href="/map" style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--accent)', minHeight: 'unset' }}>
+              View map →
             </Link>
           </div>
         </div>
       </section>
 
-      {/* ── Feature strip ──────────────────────────────── */}
-      <section
-        style={{
-          borderTop: '1px solid var(--border)',
-          background: 'var(--surface-1)',
-          padding: '48px 24px',
-        }}
-        aria-labelledby="features-heading"
-      >
+      {/* ── FEATURES ───────────────────────────────────── */}
+      <section style={{
+        borderTop: '1px solid var(--border)',
+        background: 'var(--surface-1)',
+        padding: 'clamp(40px, 6vw, 64px) 24px',
+      }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <h2 id="features-heading" style={{
-            fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase',
-            letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 24,
-            textAlign: 'center',
-          }}>
-            Built for the worst moments
-          </h2>
+          <div style={{ textAlign: 'center', marginBottom: 40 }}>
+            <h2 style={{
+              fontSize: 'clamp(1.4rem, 3vw, 2rem)', fontWeight: 800,
+              letterSpacing: '-0.02em', color: 'var(--text-primary)', marginBottom: 10,
+            }}>
+              Built for the worst moments
+            </h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '1rem', maxWidth: 480, margin: '0 auto' }}>
+              Six capabilities that matter when disaster strikes.
+            </p>
+          </div>
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
             gap: 16,
           }}>
-            {FEATURES.map(f => (
-              <div key={f.title} style={{
-                padding: '20px', borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--border)',
-                background: 'var(--surface-2)',
-                transition: 'all var(--transition)',
-              }}>
-                <div style={{ fontSize: '1.75rem', marginBottom: 10 }}>{f.icon}</div>
-                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: 6 }}>
+            {FEATURES.map((f, i) => (
+              <div key={i} className="ga-feature-card">
+                <div style={{
+                  width: 40, height: 40, borderRadius: 'var(--radius-sm)',
+                  background: 'var(--accent-subtle)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '1.3rem', marginBottom: 14,
+                }}>
+                  {f.icon}
+                </div>
+                <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)', marginBottom: 6 }}>
                   {f.title}
                 </div>
-                <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                <div style={{ fontSize: '0.83rem', color: 'var(--text-muted)', lineHeight: 1.65 }}>
                   {f.desc}
                 </div>
               </div>
@@ -188,37 +257,81 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Footer ─────────────────────────────────────── */}
-      <footer
-        role="contentinfo"
-        style={{
-          borderTop: '1px solid var(--border)',
-          padding: '24px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: 12,
-          maxWidth: 1200,
-          margin: '0 auto',
-          fontSize: '0.8rem',
-          color: 'var(--text-muted)',
-        }}
-      >
-        <span>GeoAlert v2 — Safety-first crisis response platform</span>
-        <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-          <Link href="/privacy" style={{ color: 'var(--text-muted)' }}>Privacy</Link>
-          <Link href="/admin" style={{ color: 'var(--text-muted)' }}>Admin</Link>
-          <a href="/classic/" style={{
-            display: 'flex', alignItems: 'center', gap: 5,
-            color: 'var(--text-muted)', padding: '4px 10px',
-            border: '1px solid var(--border)', borderRadius: 'var(--radius-full)',
-            fontSize: '0.78rem', minHeight: 'unset',
+      {/* ── CTA BAND ─────────────────────────────────── */}
+      <section style={{
+        background: 'linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%)',
+        padding: 'clamp(40px, 6vw, 56px) 24px',
+      }}>
+        <div style={{
+          maxWidth: 700, margin: '0 auto', textAlign: 'center',
+        }}>
+          <h2 style={{
+            fontSize: 'clamp(1.4rem, 3vw, 2rem)', fontWeight: 800,
+            color: '#fff', letterSpacing: '-0.02em', marginBottom: 12,
           }}>
-            🌐 Classic version
+            Ready when you need it most
+          </h2>
+          <p style={{ color: 'rgba(255,255,255,.8)', fontSize: '1rem', marginBottom: 28 }}>
+            Start with the interactive map, or go straight to Crisis Mode for a lightweight emergency view.
+          </p>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link href="/map" style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              padding: '0 24px', height: 48, borderRadius: 'var(--radius-sm)',
+              background: '#fff', color: '#1d4ed8',
+              fontWeight: 700, fontSize: '0.95rem', textDecoration: 'none',
+              minHeight: 'unset', transition: 'opacity 150ms',
+            }}>
+              Open Live Map
+            </Link>
+            <Link href="/crisis" style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              padding: '0 24px', height: 48, borderRadius: 'var(--radius-sm)',
+              background: 'rgba(255,255,255,.15)', color: '#fff',
+              border: '1px solid rgba(255,255,255,.3)',
+              fontWeight: 700, fontSize: '0.95rem', textDecoration: 'none',
+              minHeight: 'unset',
+            }}>
+              Crisis Mode
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FOOTER ────────────────────────────────────── */}
+      <footer role="contentinfo" style={{
+        borderTop: '1px solid var(--border)',
+        padding: '20px 24px',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        flexWrap: 'wrap', gap: 12,
+        maxWidth: 1200, margin: '0 auto',
+        fontSize: '0.8rem', color: 'var(--text-muted)',
+      }}>
+        <span>© 2026 GeoAlert v2 · Safety-first emergency alerts</span>
+        <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
+          <Link href="/privacy" style={{ color: 'var(--text-muted)', minHeight: 'unset' }}>Privacy</Link>
+          <Link href="/admin" style={{ color: 'var(--text-muted)', minHeight: 'unset' }}>Admin</Link>
+          <Link href="/crisis" style={{ color: 'var(--text-muted)', minHeight: 'unset' }}>Crisis Mode</Link>
+          <a href="/classic/" style={{
+            display: 'inline-flex', alignItems: 'center', gap: 4,
+            color: 'var(--text-muted)', padding: '3px 10px', minHeight: 'unset',
+            border: '1px solid var(--border)', borderRadius: 'var(--radius-full)',
+            fontSize: '0.75rem', background: 'var(--surface-2)', textDecoration: 'none',
+          }}>
+            🌐 Classic
           </a>
         </div>
       </footer>
-    </main>
+
+      <style>{`
+        @keyframes pulse-dot {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.3); opacity: 0.7; }
+        }
+        @media (max-width: 640px) {
+          section:first-of-type { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
+    </div>
   );
 }

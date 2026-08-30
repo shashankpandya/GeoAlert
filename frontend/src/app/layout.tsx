@@ -15,27 +15,43 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: light)', color: '#f5f6fa' },
     { media: '(prefers-color-scheme: dark)',  color: '#0d1117' },
   ],
 };
+
+// Blocking script — runs before React, prevents theme flash
+const themeScript = `
+  (function() {
+    try {
+      var stored = localStorage.getItem('ga-theme');
+      var dark = stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    } catch(e) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  })();
+`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
-      data-theme="dark"
       data-scroll-behavior="smooth"
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
+      <head>
+        {/* Blocking theme script prevents flash */}
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body>
         <ThemeProvider>
           <div id="alert-announcer" aria-live="polite" aria-atomic={false}
                aria-relevant="additions text" className="sr-only" />
           <AppNav />
-          <div id="main-content">
+          <main id="main-content">
             {children}
-          </div>
+          </main>
         </ThemeProvider>
       </body>
     </html>
