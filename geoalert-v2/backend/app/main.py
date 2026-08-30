@@ -10,6 +10,7 @@ from app.routers import auth as auth_router
 from app.routers import admin as admin_router
 from app.routers import notifications as notif_router
 from app.routers import users as users_router
+from app.routers import feeds as feeds_router
 from app.middleware.rate_limit import RateLimitMiddleware
 from app.middleware.error_handler import (
     validation_exception_handler,
@@ -63,6 +64,7 @@ app.include_router(auth_router.router)
 app.include_router(admin_router.router)
 app.include_router(notif_router.router)
 app.include_router(users_router.router)
+app.include_router(feeds_router.router)
 
 
 @app.get("/health")
