@@ -1,0 +1,19 @@
+{
+  "app.title": "GeoAlert — Safety-first crisis alerts",
+  "crisis.title": "GeoAlert Crisis Mode",
+  "crisis.noAlerts": "No active alerts in your area",
+  "alert.severity.extreme": "Extreme",
+  "alert.severity.severe": "Severe",
+  "alert.severity.moderate": "Moderate",
+  "alert.severity.minor": "Minor",
+  "alert.source.official": "Official",
+  "alert.source.community": "Community",
+  "alert.freshness.current": "Current",
+  "alert.freshness.aging": "Aging",
+  "alert.freshness.stale": "Stale",
+  "alert.action.dismiss": "Dismiss",
+  "alert.action.download": "Download",
+  "alert.action.share": "Share",
+  "offline.banner": "You are offline. Showing cached data.",
+  "offline.restored": "Connection restored — syncing..."
+}

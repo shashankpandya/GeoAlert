@@ -1,0 +1,382 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════
+   GeoAlert v2 — Design Tokens
+   Light mode default, dark mode via [data-theme="dark"]
+   ═══════════════════════════════════════════════════════ */
+
+:root {
+  /* --- Surfaces --- */
+  --bg:          #f5f6fa;
+  --surface-1:   #ffffff;
+  --surface-2:   #f0f2f7;
+  --surface-3:   #e4e7ef;
+  --surface-overlay: rgba(255,255,255,0.85);
+
+  /* --- Text --- */
+  --text-primary:   #0f1117;
+  --text-secondary: #374151;
+  --text-muted:     #6b7280;
+  --text-subtle:    #9ca3af;
+
+  /* --- Borders --- */
+  --border:       #e2e5ed;
+  --border-strong:#c8cdd8;
+
+  /* --- Brand / Accent --- */
+  --accent:        #2563eb;
+  --accent-hover:  #1d4ed8;
+  --accent-subtle: #eff6ff;
+  --accent-text:   #1e40af;
+
+  /* --- Severity --- */
+  --sev-extreme:       #dc2626;
+  --sev-extreme-bg:    #fef2f2;
+  --sev-extreme-text:  #7f1d1d;
+  --sev-severe:        #ea580c;
+  --sev-severe-bg:     #fff7ed;
+  --sev-severe-text:   #7c2d12;
+  --sev-moderate:      #d97706;
+  --sev-moderate-bg:   #fffbeb;
+  --sev-moderate-text: #78350f;
+  --sev-minor:         #16a34a;
+  --sev-minor-bg:      #f0fdf4;
+  --sev-minor-text:    #14532d;
+
+  /* --- Status --- */
+  --status-online:  #16a34a;
+  --status-offline: #dc2626;
+  --status-warning: #d97706;
+
+  /* --- Freshness --- */
+  --fresh-color: #15803d;
+  --fresh-bg:    #f0fdf4;
+  --aging-color: #b45309;
+  --aging-bg:    #fffbeb;
+  --stale-color: #b91c1c;
+  --stale-bg:    #fef2f2;
+
+  /* --- Shadows --- */
+  --shadow-sm:  0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:  0 4px 12px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.04);
+  --shadow-lg:  0 8px 24px rgba(0,0,0,.10), 0 4px 8px rgba(0,0,0,.06);
+  --shadow-xl:  0 20px 48px rgba(0,0,0,.12);
+
+  /* --- Radius --- */
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  16px;
+  --radius-xl:  24px;
+  --radius-full: 9999px;
+
+  /* --- Nav --- */
+  --nav-h: 56px;
+
+  /* --- Transitions --- */
+  --transition: 150ms ease;
+  --transition-slow: 250ms ease;
+
+  font-size: 16px;
+}
+
+/* ── Dark mode ─────────────────────────────────────── */
+[data-theme="dark"] {
+  --bg:          #0d1117;
+  --surface-1:   #161b22;
+  --surface-2:   #21262d;
+  --surface-3:   #2d333b;
+  --surface-overlay: rgba(22,27,34,0.92);
+
+  --text-primary:   #e6edf3;
+  --text-secondary: #c9d1d9;
+  --text-muted:     #8b949e;
+  --text-subtle:    #6e7681;
+
+  --border:       #30363d;
+  --border-strong:#484f58;
+
+  --accent:        #58a6ff;
+  --accent-hover:  #79b8ff;
+  --accent-subtle: #1c2d3f;
+  --accent-text:   #79b8ff;
+
+  --sev-extreme-bg:    #2d0a0a;
+  --sev-extreme-text:  #fca5a5;
+  --sev-severe-bg:     #2d150a;
+  --sev-severe-text:   #fdba74;
+  --sev-moderate-bg:   #2d200a;
+  --sev-moderate-text: #fcd34d;
+  --sev-minor-bg:      #0a2d14;
+  --sev-minor-text:    #86efac;
+
+  --shadow-sm:  0 1px 3px rgba(0,0,0,.3);
+  --shadow-md:  0 4px 12px rgba(0,0,0,.4);
+  --shadow-lg:  0 8px 24px rgba(0,0,0,.5);
+  --shadow-xl:  0 20px 48px rgba(0,0,0,.6);
+}
+
+/* ── Reset & Base ──────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  transition: background var(--transition-slow), color var(--transition-slow);
+}
+
+/* ── Focus ─────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* ── Typography ────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+a:hover { color: var(--accent-hover); }
+
+/* ── Utility Classes ───────────────────────────────── */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ── Cards ─────────────────────────────────────────── */
+.ga-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition), border-color var(--transition);
+}
+.ga-card:hover { box-shadow: var(--shadow-md); }
+
+/* ── Buttons ───────────────────────────────────────── */
+.ga-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 16px;
+  height: 36px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+  text-decoration: none;
+  min-height: 36px;
+}
+.ga-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.ga-btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.ga-btn-primary:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.ga-btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border-color: var(--border);
+}
+.ga-btn-ghost:hover:not(:disabled) {
+  background: var(--surface-2);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.ga-btn-danger {
+  background: var(--sev-extreme);
+  color: #fff;
+  border-color: var(--sev-extreme);
+}
+.ga-btn-danger:hover:not(:disabled) { opacity: 0.9; }
+
+.ga-btn-lg {
+  height: 44px;
+  padding: 0 24px;
+  font-size: 1rem;
+}
+
+.ga-btn-sm {
+  height: 28px;
+  padding: 0 10px;
+  font-size: 0.8rem;
+}
+
+/* ── Badges ────────────────────────────────────────── */
+.ga-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ga-badge-extreme  { background: var(--sev-extreme-bg);  color: var(--sev-extreme-text); }
+.ga-badge-severe   { background: var(--sev-severe-bg);   color: var(--sev-severe-text); }
+.ga-badge-moderate { background: var(--sev-moderate-bg); color: var(--sev-moderate-text); }
+.ga-badge-minor    { background: var(--sev-minor-bg);    color: var(--sev-minor-text); }
+
+/* ── Nav ───────────────────────────────────────────── */
+.ga-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: var(--nav-h);
+  background: var(--surface-overlay);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 8px;
+  transition: background var(--transition-slow);
+}
+
+/* ── Severity left-border shorthand ───────────────── */
+.sev-border-extreme  { border-left: 4px solid var(--sev-extreme); }
+.sev-border-severe   { border-left: 4px solid var(--sev-severe); }
+.sev-border-moderate { border-left: 4px solid var(--sev-moderate); }
+.sev-border-minor    { border-left: 4px solid var(--sev-minor); }
+
+/* ── Alert list item ───────────────────────────────── */
+.ga-alert-item {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all var(--transition);
+  text-align: left;
+  width: 100%;
+}
+.ga-alert-item:hover {
+  background: var(--surface-2);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm);
+}
+.ga-alert-item.selected {
+  border-color: var(--accent);
+  background: var(--accent-subtle);
+}
+
+/* ── Freshness pill ────────────────────────────────── */
+.freshness-fresh   { color: var(--fresh-color); background: var(--fresh-bg); }
+.freshness-aging   { color: var(--aging-color); background: var(--aging-bg); }
+.freshness-stale   { color: var(--stale-color); background: var(--stale-bg); }
+
+/* ── Animations ────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+@keyframes pulse-glow {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(37,99,235,.5)); }
+  50%       { filter: drop-shadow(0 0 20px rgba(37,99,235,.8)); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-fade-in { animation: fadeIn 200ms ease both; }
+.animate-slide-right { animation: slideInRight 250ms ease both; }
+
+/* ── Spinner ───────────────────────────────────────── */
+.ga-spinner {
+  width: 16px; height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+/* ── Touch targets ─────────────────────────────────── */
+button, a, input, select, textarea { min-height: 36px; }
+
+/* ── Reduced motion ────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── 400% zoom ─────────────────────────────────────── */
+@media (max-width: 320px) {
+  body { overflow-x: hidden; }
+  .ga-nav { padding: 0 12px; gap: 4px; }
+}
+
+/* ── Feature card ──────────────────────────────────── */
+.ga-feature-card {
+  padding: 22px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+}
+.ga-feature-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
+}
+
+/* ── Pulse dot animation ────────────────────────────── */
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.4); opacity: 0.6; }
+}
+
+/* ── color-mix fallback for older browsers ─────────── */
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+  .ga-nav { background: var(--surface-1); }
+}
+
+/* ── Responsive hero ───────────────────────────────── */
+@media (max-width: 640px) {
+  #main-content { overflow-x: hidden; }
+}
