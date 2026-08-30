@@ -1,5 +1,4 @@
 {
-  "rootDirectory": "geoalert-v2/frontend",
   "headers": [
     {
       "source": "/classic/:path*",
