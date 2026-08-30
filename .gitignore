@@ -1,0 +1,47 @@
+# ===================================================
+# GeoAlert - Root .gitignore
+# ===================================================
+
+# SECRETS - never commit
+geoalert-v2/backend/.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.pyc
+
+# Node / Next.js
+node_modules/
+.next/
+.turbo/
+out/
+
+# Logs
+*.log
+npm-debug.log*
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Kiro - keep spec docs, ignore runtime hooks
+.kiro/hooks/
+
+# Build artefacts
+frontend/playwright-report/
+frontend/test-results/
+frontend/coverage/
+backend/.coverage
+backend/htmlcov/
+backend/*.pyc

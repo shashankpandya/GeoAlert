@@ -1,0 +1,780 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Initialize Next.js 14+ App Router project with TypeScript and Tailwind CSS": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605473807
+      },
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605502919
+      },
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786606820358
+      }
+    ],
+    "1.2 Initialize FastAPI project with virtual environment and dependency management": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605473939
+      },
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605504172
+      },
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786606821170
+      }
+    ],
+    "1.3 Set up PostgreSQL + PostGIS schema with Alembic migrations": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605474068
+      },
+      {
+        "executionId": "085850c4-d28e-463b-8da4-3c2fa859b36b",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786606942580
+      },
+      {
+        "executionId": "085850c4-d28e-463b-8da4-3c2fa859b36b",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786607502925
+      }
+    ],
+    "1.4 Define all shared TypeScript types in `src/types/index.ts`": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605474185
+      },
+      {
+        "executionId": "085850c4-d28e-463b-8da4-3c2fa859b36b",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786606943374
+      },
+      {
+        "executionId": "085850c4-d28e-463b-8da4-3c2fa859b36b",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786607504105
+      }
+    ],
+    "2.1 Create SQLAlchemy ORM models for `Source`, `Alert`, `AlertArea`, and `IngestionLog`": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605474305
+      },
+      {
+        "executionId": "085850c4-d28e-463b-8da4-3c2fa859b36b",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786607518986
+      },
+      {
+        "executionId": "085850c4-d28e-463b-8da4-3c2fa859b36b",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786607811267
+      }
+    ],
+    "2.2 Implement Pydantic v2 schemas for all API request/response types": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605474423
+      },
+      {
+        "executionId": "085850c4-d28e-463b-8da4-3c2fa859b36b",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786607519575
+      },
+      {
+        "executionId": "085850c4-d28e-463b-8da4-3c2fa859b36b",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786607812275
+      }
+    ],
+    "2.3 Implement `GET /api/alerts` endpoint with PostGIS spatial filtering": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605474700
+      },
+      {
+        "executionId": "085850c4-d28e-463b-8da4-3c2fa859b36b",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786607891270
+      },
+      {
+        "executionId": "085850c4-d28e-463b-8da4-3c2fa859b36b",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786608399649
+      }
+    ],
+    "2.4 Implement `GET /api/alerts/{id}` and `GET /api/sources` endpoints": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605474849
+      },
+      {
+        "executionId": "085850c4-d28e-463b-8da4-3c2fa859b36b",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786607892193
+      },
+      {
+        "executionId": "085850c4-d28e-463b-8da4-3c2fa859b36b",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786608400535
+      }
+    ],
+    "3.1 Implement `SourceClassifier` in `backend/app/services/classifier.py`": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605474935
+      },
+      {
+        "executionId": "085850c4-d28e-463b-8da4-3c2fa859b36b",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786607893178
+      },
+      {
+        "executionId": "085850c4-d28e-463b-8da4-3c2fa859b36b",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786608398341
+      }
+    ],
+    "3.2 Implement `POST /api/sources/classify` endpoint wired to `SourceClassifier`": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605475153
+      },
+      {
+        "executionId": "bfdae8b6-d18c-44c4-9bc5-a45509f72f15",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786610342434
+      },
+      {
+        "executionId": "14209fd4-5665-47cf-acdf-9364d45d78db",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786610889381
+      }
+    ],
+    "4.1 Implement CAP 1.2 XML parser in `backend/app/parsers/cap_parser.py`": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605475277
+      },
+      {
+        "executionId": "085850c4-d28e-463b-8da4-3c2fa859b36b",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786607894550
+      },
+      {
+        "executionId": "085850c4-d28e-463b-8da4-3c2fa859b36b",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786608396596
+      }
+    ],
+    "4.2 Implement GeoJSON and custom format parsers in `backend/app/parsers/`": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605475381
+      },
+      {
+        "executionId": "085850c4-d28e-463b-8da4-3c2fa859b36b",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786607895485
+      },
+      {
+        "executionId": "085850c4-d28e-463b-8da4-3c2fa859b36b",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786608397430
+      }
+    ],
+    "4.3 Implement `AlertIngestionService` with idempotent upsert logic": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605475493
+      },
+      {
+        "executionId": "bfdae8b6-d18c-44c4-9bc5-a45509f72f15",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786610343248
+      },
+      {
+        "executionId": "14209fd4-5665-47cf-acdf-9364d45d78db",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786610890198
+      }
+    ],
+    "4.4 Implement Celery task `ingest_source_feed` and `POST /api/alerts/ingest` endpoint": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605475610
+      },
+      {
+        "executionId": "14209fd4-5665-47cf-acdf-9364d45d78db",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786610891541
+      }
+    ],
+    "5. Checkpoint — backend foundation": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605475703
+      },
+      {
+        "executionId": "14209fd4-5665-47cf-acdf-9364d45d78db",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786610903086
+      },
+      {
+        "executionId": "ea2abe33-79a1-42f5-ba14-95424f627b8b",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786611139300
+      }
+    ],
+    "6.1 Create `src/app/crisis/page.tsx` as a Next.js Server Component": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605475795
+      },
+      {
+        "executionId": "2781adca-eaa7-4223-b826-da1dabdb4d66",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786611242158
+      },
+      {
+        "executionId": "2781adca-eaa7-4223-b826-da1dabdb4d66",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786612248763
+      }
+    ],
+    "6.2 Apply inline CSS only — zero external resources on crisis page": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605475899
+      },
+      {
+        "executionId": "2781adca-eaa7-4223-b826-da1dabdb4d66",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786612257745
+      },
+      {
+        "executionId": "2781adca-eaa7-4223-b826-da1dabdb4d66",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786612297494
+      }
+    ],
+    "6.3 Add ARIA landmarks, skip links, and semantic structure to crisis page": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605475998
+      },
+      {
+        "executionId": "2781adca-eaa7-4223-b826-da1dabdb4d66",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786612258441
+      },
+      {
+        "executionId": "2781adca-eaa7-4223-b826-da1dabdb4d66",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786612298328
+      }
+    ],
+    "6.4 Implement server-side pagination for crisis page alert list": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605476094
+      },
+      {
+        "executionId": "2781adca-eaa7-4223-b826-da1dabdb4d66",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786612259331
+      },
+      {
+        "executionId": "2781adca-eaa7-4223-b826-da1dabdb4d66",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786612299060
+      }
+    ],
+    "7.1 Create `src/components/SourceBadge.tsx` component": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605476219
+      },
+      {
+        "executionId": "2781adca-eaa7-4223-b826-da1dabdb4d66",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786611242778
+      },
+      {
+        "executionId": "2781adca-eaa7-4223-b826-da1dabdb4d66",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786612245709
+      }
+    ],
+    "7.2 Integrate `SourceBadge` into crisis page and alert detail views": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605476358
+      },
+      {
+        "executionId": "2781adca-eaa7-4223-b826-da1dabdb4d66",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786612260635
+      },
+      {
+        "executionId": "2781adca-eaa7-4223-b826-da1dabdb4d66",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786612299802
+      }
+    ],
+    "8.1 Create `src/components/MapView.tsx` client component with MapLibre initialization": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605476464
+      },
+      {
+        "executionId": "2781adca-eaa7-4223-b826-da1dabdb4d66",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786611245863
+      },
+      {
+        "executionId": "2781adca-eaa7-4223-b826-da1dabdb4d66",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786612247828
+      }
+    ],
+    "8.2 Implement accessible keyboard controls on the map": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605476567
+      },
+      {
+        "executionId": "2781adca-eaa7-4223-b826-da1dabdb4d66",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786612261657
+      },
+      {
+        "executionId": "2781adca-eaa7-4223-b826-da1dabdb4d66",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786612300603
+      }
+    ],
+    "8.3 Add focus management and screen reader support for map alerts": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605476698
+      },
+      {
+        "executionId": "2781adca-eaa7-4223-b826-da1dabdb4d66",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786612308523
+      },
+      {
+        "executionId": "27065182-70ae-4210-a157-1f9a625c0973",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786612430075
+      }
+    ],
+    "8.4 Create `src/app/map/page.tsx` integrating `MapView` and `AlertDetailsPanel`": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605476808
+      },
+      {
+        "executionId": "2781adca-eaa7-4223-b826-da1dabdb4d66",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786612309948
+      },
+      {
+        "executionId": "11ebbc07-8f0a-48d6-bed8-e536c50d9aa6",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786612935431
+      }
+    ],
+    "9.1 Create `src/components/AlertDetailsPanel.tsx`": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605476929
+      },
+      {
+        "executionId": "2781adca-eaa7-4223-b826-da1dabdb4d66",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786611244647
+      },
+      {
+        "executionId": "2781adca-eaa7-4223-b826-da1dabdb4d66",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786612246728
+      }
+    ],
+    "9.2 Implement focus trap and modal accessibility for AlertDetailsPanel": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605477047
+      },
+      {
+        "executionId": "2781adca-eaa7-4223-b826-da1dabdb4d66",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786612310996
+      },
+      {
+        "executionId": "27065182-70ae-4210-a157-1f9a625c0973",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786612430877
+      }
+    ],
+    "10.1 Create `src/components/FreshnessIndicator.tsx`": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605477189
+      },
+      {
+        "executionId": "2781adca-eaa7-4223-b826-da1dabdb4d66",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786611243738
+      },
+      {
+        "executionId": "2781adca-eaa7-4223-b826-da1dabdb4d66",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786612244829
+      }
+    ],
+    "10.2 Integrate `FreshnessIndicator` into crisis page, detail panel, and map popup": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605477283
+      },
+      {
+        "executionId": "2781adca-eaa7-4223-b826-da1dabdb4d66",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786612312126
+      },
+      {
+        "executionId": "67d3708f-e353-4cea-88b8-2acd34fad59e",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786615239160
+      }
+    ],
+    "11. Checkpoint — frontend core": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605477413
+      }
+    ],
+    "12.1 Set up Workbox in Next.js using `next-pwa` or manual Workbox webpack plugin": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605477541
+      }
+    ],
+    "12.2 Implement caching strategies matching the design spec": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605477664
+      }
+    ],
+    "12.3 Implement IndexedDB schema and access layer in `src/lib/offline-db.ts`": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605477784
+      }
+    ],
+    "12.4 Implement `OfflineIndicator` component and online/offline detection": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605477903
+      }
+    ],
+    "12.5 Implement offline package download (incident package)": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605478048
+      }
+    ],
+    "13.1 Create `src/components/A11yToolbar.tsx`": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605478148
+      }
+    ],
+    "13.2 Apply WCAG 2.2 AA color contrast and visual standards globally": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605478262
+      }
+    ],
+    "13.3 Implement 400% zoom and responsive layout compliance": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605478390
+      }
+    ],
+    "13.4 Implement ARIA live regions for dynamic alert updates": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605478506
+      }
+    ],
+    "14.1 Implement coarse location service in `src/lib/location.ts`": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605478632
+      }
+    ],
+    "14.2 Implement location consent flow and privacy dashboard": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605478751
+      }
+    ],
+    "14.3 Implement data export and deletion endpoints": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605478904
+      }
+    ],
+    "15.1 Add XSS sanitization middleware for all user text inputs": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605479000
+      }
+    ],
+    "15.3 Implement Content Security Policy headers": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605479122
+      }
+    ],
+    "15.4 Implement Redis-backed rate limiting on FastAPI endpoints": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605479238
+      }
+    ],
+    "15.5 Implement WebAuthn passkey authentication endpoints": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605479345
+      }
+    ],
+    "16.1 Implement provider health metrics collection": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605479454
+      }
+    ],
+    "16.2 Implement `GET /api/admin/dashboard` endpoint": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605479622
+      }
+    ],
+    "16.3 Create `src/app/admin/page.tsx` admin dashboard UI": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605479729
+      }
+    ],
+    "17.1 Implement full-text alert search endpoint": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605479874
+      }
+    ],
+    "17.2 Implement notification preferences storage": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605479987
+      }
+    ],
+    "17.3 Implement error handling middleware and circuit breakers": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605480103
+      }
+    ],
+    "18.1 Generate and expose OpenAPI 3.1 documentation": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605480213
+      }
+    ],
+    "18.2 Set up FormatJS (react-intl) internationalization infrastructure": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605480366
+      }
+    ],
+    "19.1 Create GitHub Actions workflow for frontend": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605480460
+      }
+    ],
+    "19.2 Create GitHub Actions workflow for backend": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605480580
+      }
+    ],
+    "19.3 Create GitHub Actions workflow for integration and accessibility tests": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605480684
+      }
+    ],
+    "19.4 Add Lighthouse CI performance budget check": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605480803
+      }
+    ],
+    "20. Final checkpoint — full integration": [
+      {
+        "executionId": "010a7ad9-5821-445e-9a27-928e593a55a4",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786605480924
+      }
+    ],
+    "1. Scaffold project structure and shared configuration": [
+      {
+        "executionId": "085850c4-d28e-463b-8da4-3c2fa859b36b",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786607504342
+      }
+    ],
+    "2. Implement FastAPI data models and core alert endpoints": [
+      {
+        "executionId": "085850c4-d28e-463b-8da4-3c2fa859b36b",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786608400691
+      }
+    ],
+    "3. Implement source classification service": [
+      {
+        "executionId": "14209fd4-5665-47cf-acdf-9364d45d78db",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786610889541
+      }
+    ],
+    "4. Implement alert ingestion pipeline": [
+      {
+        "executionId": "14209fd4-5665-47cf-acdf-9364d45d78db",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786610891700
+      }
+    ],
+    "6. Implement Crisis Mode text-only page": [
+      {
+        "executionId": "2781adca-eaa7-4223-b826-da1dabdb4d66",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786612299254
+      }
+    ],
+    "7. Implement provenance badge components": [
+      {
+        "executionId": "2781adca-eaa7-4223-b826-da1dabdb4d66",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786612300052
+      }
+    ],
+    "9. Implement Alert Details Panel": [
+      {
+        "executionId": "27065182-70ae-4210-a157-1f9a625c0973",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786612431066
+      }
+    ],
+    "8. Implement MapLibre GL JS map view": [
+      {
+        "executionId": "11ebbc07-8f0a-48d6-bed8-e536c50d9aa6",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786612935853
+      }
+    ],
+    "10. Implement temporal freshness rendering": [
+      {
+        "executionId": "67d3708f-e353-4cea-88b8-2acd34fad59e",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786615239786
+      }
+    ],
+    "8.5 Write unit tests for MapView keyboard controls": [
+      {
+        "executionId": "67d3708f-e353-4cea-88b8-2acd34fad59e",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786615254733
+      }
+    ],
+    "9.3 Write unit tests for AlertDetailsPanel": [
+      {
+        "executionId": "67d3708f-e353-4cea-88b8-2acd34fad59e",
+        "chatSessionId": "sess_dee26ef7-dadd-4a9a-b6fb-ac212f0f44cf",
+        "timestamp": 1786615261166
+      }
+    ]
+  }
+}
