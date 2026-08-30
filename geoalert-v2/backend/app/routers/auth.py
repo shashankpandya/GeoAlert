@@ -8,7 +8,8 @@ import jwt as pyjwt
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
-SECRET = "geoalert-dev-secret"
+from app.config import settings
+SECRET = settings.SECRET_KEY
 CREDENTIALS_STORE: dict = {}
 
 
