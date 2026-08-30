@@ -90,7 +90,7 @@ export function MapView({ alerts, userLocation, selectedAlertId, onAlertSelect, 
       </div>
       {mode === 'keyboard-navigate' && (
         <div role='status' style={{ position:'absolute',top:8,left:'50%',transform:'translateX(-50%)',background:'#1e3a5f',color:'#fff',padding:'4px 12px',borderRadius:'4px',fontSize:'0.75rem',zIndex:10,pointerEvents:'none' }}>
-          Keyboard mode â€” Tab cycles alerts, Esc to exit
+          Keyboard mode — Tab cycles alerts, Esc to exit
         </div>
       )}
       {offlineMode && (
