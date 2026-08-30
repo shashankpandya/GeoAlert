@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, text
 from sqlalchemy.orm import selectinload
+from sqlalchemy.exc import OperationalError, InterfaceError
 
 from app.database import get_db
 from app.models.models import Alert, Source, AlertArea
@@ -119,110 +120,123 @@ async def get_alerts(
     - **source**: official|community|all (default all).
     - **include_expired**: include alerts past their `expires` timestamp.
     """
-    now = datetime.now(timezone.utc)
-    stale_cutoff = now - timedelta(minutes=STALE_THRESHOLD_MINUTES)
+    try:
+        now = datetime.now(timezone.utc)
+        stale_cutoff = now - timedelta(minutes=STALE_THRESHOLD_MINUTES)
 
-    # Base query â€” eagerly load source so _alert_to_response can access it
-    stmt = (
-        select(Alert)
-        .join(Alert.source)
-        .options(selectinload(Alert.source))
-    )
-
-    # --- Expiry filter ---
-    if not include_expired:
-        stmt = stmt.where(Alert.expires > now)
-
-    # --- Bounding-box spatial filter (PostGIS) ---
-    bbox_provided = all(v is not None for v in [min_lon, min_lat, max_lon, max_lat])
-    if bbox_provided:
-        # Validate ordering
-        if max_lon <= min_lon:  # type: ignore[operator]
-            raise HTTPException(status_code=422, detail="max_lon must be greater than min_lon")
-        if max_lat <= min_lat:  # type: ignore[operator]
-            raise HTTPException(status_code=422, detail="max_lat must be greater than min_lat")
-
-        bbox_wkt = (
-            f"POLYGON(({min_lon} {min_lat},"
-            f"{max_lon} {min_lat},"
-            f"{max_lon} {max_lat},"
-            f"{min_lon} {max_lat},"
-            f"{min_lon} {min_lat}))"
+        # Base query — eagerly load source so _alert_to_response can access it
+        stmt = (
+            select(Alert)
+            .join(Alert.source)
+            .options(selectinload(Alert.source))
         )
-        bbox_geom = func.ST_GeomFromText(bbox_wkt, 4326)
-        stmt = stmt.where(func.ST_Intersects(Alert.geometry, bbox_geom))
 
-    # --- Severity filter ---
-    if severity:
-        valid_severities = {"extreme", "severe", "moderate", "minor"}
-        filtered = [s.lower() for s in severity if s.lower() in valid_severities]
-        if filtered:
-            stmt = stmt.where(Alert.severity.in_(filtered))
+        # --- Expiry filter ---
+        if not include_expired:
+            stmt = stmt.where(Alert.expires > now)
 
-    # --- Source classification filter ---
-    if source and source != "all":
-        stmt = stmt.where(Source.classification == source)
+        # --- Bounding-box spatial filter (PostGIS) ---
+        bbox_provided = all(v is not None for v in [min_lon, min_lat, max_lon, max_lat])
+        if bbox_provided:
+            # Validate ordering
+            if max_lon <= min_lon:  # type: ignore[operator]
+                raise HTTPException(status_code=422, detail="max_lon must be greater than min_lon")
+            if max_lat <= min_lat:  # type: ignore[operator]
+                raise HTTPException(status_code=422, detail="max_lat must be greater than min_lat")
 
-    # --- Count total matching rows (before pagination) ---
-    count_stmt = select(func.count()).select_from(stmt.subquery())
-    total_result = await db.execute(count_stmt)
-    total: int = total_result.scalar() or 0
+            bbox_wkt = (
+                f"POLYGON(({min_lon} {min_lat},"
+                f"{max_lon} {min_lat},"
+                f"{max_lon} {max_lat},"
+                f"{min_lon} {max_lat},"
+                f"{min_lon} {min_lat}))"
+            )
+            bbox_geom = func.ST_GeomFromText(bbox_wkt, 4326)
+            stmt = stmt.where(func.ST_Intersects(Alert.geometry, bbox_geom))
 
-    # --- Paginate and fetch alert rows ---
-    stmt = stmt.order_by(Alert.effective.desc()).limit(limit).offset(offset)
-    result = await db.execute(stmt)
-    alerts = result.scalars().all()
+        # --- Severity filter ---
+        if severity:
+            valid_severities = {"extreme", "severe", "moderate", "minor"}
+            filtered = [s.lower() for s in severity if s.lower() in valid_severities]
+            if filtered:
+                stmt = stmt.where(Alert.severity.in_(filtered))
 
-    if not alerts:
+        # --- Source classification filter ---
+        if source and source != "all":
+            stmt = stmt.where(Source.classification == source)
+
+        # --- Count total matching rows (before pagination) ---
+        count_stmt = select(func.count()).select_from(stmt.subquery())
+        total_result = await db.execute(count_stmt)
+        total: int = total_result.scalar() or 0
+
+        # --- Paginate and fetch alert rows ---
+        stmt = stmt.order_by(Alert.effective.desc()).limit(limit).offset(offset)
+        result = await db.execute(stmt)
+        alerts = result.scalars().all()
+
+        if not alerts:
+            return AlertsResponse(
+                alerts=[],
+                metadata=AlertsMetadata(
+                    total=total,
+                    returned=0,
+                    timestamp=now,
+                    stale_cutoff=stale_cutoff,
+                ),
+            )
+
+        # --- Fetch GeoJSON geometries via PostGIS ST_AsGeoJSON ---
+        alert_ids_str = [str(a.id) for a in alerts]
+        geom_result = await db.execute(
+            text("SELECT id::text, ST_AsGeoJSON(geometry) FROM alerts WHERE id = ANY(:ids)"),
+            {"ids": alert_ids_str},
+        )
+        geom_map: dict[str, dict] = {
+            row[0]: json.loads(row[1]) for row in geom_result if row[1]
+        }
+
+        # --- Fetch AlertArea rows for these alerts ---
+        areas_result = await db.execute(
+            select(AlertArea)
+            .where(AlertArea.alert_id.in_([a.id for a in alerts]))
+            .order_by(AlertArea.alert_id, AlertArea.sort_order)
+        )
+        areas_by_alert: dict[str, List[str]] = {}
+        for area in areas_result.scalars():
+            areas_by_alert.setdefault(str(area.alert_id), []).append(area.area_description)
+
+        # --- Assemble responses ---
+        responses = [
+            _alert_to_response(
+                alert=a,
+                geom=geom_map.get(str(a.id), {}),
+                areas=areas_by_alert.get(str(a.id), []),
+            )
+            for a in alerts
+        ]
+
         return AlertsResponse(
-            alerts=[],
+            alerts=responses,
             metadata=AlertsMetadata(
                 total=total,
-                returned=0,
+                returned=len(responses),
                 timestamp=now,
                 stale_cutoff=stale_cutoff,
             ),
         )
-
-    # --- Fetch GeoJSON geometries via PostGIS ST_AsGeoJSON ---
-    alert_ids_str = [str(a.id) for a in alerts]
-    geom_result = await db.execute(
-        text("SELECT id::text, ST_AsGeoJSON(geometry) FROM alerts WHERE id = ANY(:ids)"),
-        {"ids": alert_ids_str},
-    )
-    geom_map: dict[str, dict] = {
-        row[0]: json.loads(row[1]) for row in geom_result if row[1]
-    }
-
-    # --- Fetch AlertArea rows for these alerts ---
-    areas_result = await db.execute(
-        select(AlertArea)
-        .where(AlertArea.alert_id.in_([a.id for a in alerts]))
-        .order_by(AlertArea.alert_id, AlertArea.sort_order)
-    )
-    areas_by_alert: dict[str, List[str]] = {}
-    for area in areas_result.scalars():
-        areas_by_alert.setdefault(str(area.alert_id), []).append(area.area_description)
-
-    # --- Assemble responses ---
-    responses = [
-        _alert_to_response(
-            alert=a,
-            geom=geom_map.get(str(a.id), {}),
-            areas=areas_by_alert.get(str(a.id), []),
+    except HTTPException:
+        raise
+    except (OperationalError, InterfaceError, OSError, ConnectionRefusedError) as e:
+        logger.error(f"Database unavailable: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "code": "DATABASE_UNAVAILABLE",
+                "message": "Database is not connected. Start your PostgreSQL server or configure DATABASE_URL in backend/.env",
+                "hint": "Copy backend/.env.example to backend/.env and set your Neon DATABASE_URL"
+            }
         )
-        for a in alerts
-    ]
-
-    return AlertsResponse(
-        alerts=responses,
-        metadata=AlertsMetadata(
-            total=total,
-            returned=len(responses),
-            timestamp=now,
-            stale_cutoff=stale_cutoff,
-        ),
-    )
 
 
 @router.post("/ingest", status_code=202)
@@ -255,17 +269,30 @@ async def search_alerts(
     page: int = Query(1, ge=1),
     db: AsyncSession = Depends(get_db),
 ):
-    from sqlalchemy import text as sa_text
-    offset = (page - 1) * limit
-    stmt = sa_text("""
-        SELECT id::text, event, headline, severity, effective, expires,
-               ts_headline('english', headline || ' ' || COALESCE(description,''), plainto_tsquery(:q)) as highlight
-        FROM alerts
-        WHERE to_tsvector('english', headline || ' ' || COALESCE(description,'')) @@ plainto_tsquery(:q)
-        AND expires > NOW()
-        ORDER BY ts_rank(to_tsvector('english', headline || ' ' || COALESCE(description,'')), plainto_tsquery(:q)) DESC
-        LIMIT :limit OFFSET :offset
-    """)
-    result = await db.execute(stmt, {"q": q, "limit": limit, "offset": offset})
-    rows = result.mappings().all()
-    return {"results": [dict(r) for r in rows], "page": page, "query": q}
+    try:
+        from sqlalchemy import text as sa_text
+        offset = (page - 1) * limit
+        stmt = sa_text("""
+            SELECT id::text, event, headline, severity, effective, expires,
+                   ts_headline('english', headline || ' ' || COALESCE(description,''), plainto_tsquery(:q)) as highlight
+            FROM alerts
+            WHERE to_tsvector('english', headline || ' ' || COALESCE(description,'')) @@ plainto_tsquery(:q)
+            AND expires > NOW()
+            ORDER BY ts_rank(to_tsvector('english', headline || ' ' || COALESCE(description,'')), plainto_tsquery(:q)) DESC
+            LIMIT :limit OFFSET :offset
+        """)
+        result = await db.execute(stmt, {"q": q, "limit": limit, "offset": offset})
+        rows = result.mappings().all()
+        return {"results": [dict(r) for r in rows], "page": page, "query": q}
+    except HTTPException:
+        raise
+    except (OperationalError, InterfaceError, OSError, ConnectionRefusedError) as e:
+        logger.error(f"Database unavailable: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "code": "DATABASE_UNAVAILABLE",
+                "message": "Database is not connected. Start your PostgreSQL server or configure DATABASE_URL in backend/.env",
+                "hint": "Copy backend/.env.example to backend/.env and set your Neon DATABASE_URL"
+            }
+        )
