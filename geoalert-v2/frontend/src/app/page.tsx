@@ -13,20 +13,21 @@ const MOCK_ALERTS = [
   { sev: 'minor',   label: 'MINOR',   event: 'Dense Fog Advisory',     area: 'San Francisco Bay, CA',      age: '2h',  src: 'Community' },
 ];
 
-const SEV_COLORS: Record<string, { dot: string; text: string; bg: string; border: string }> = {
-  extreme:  { dot: '#dc2626', text: '#dc2626', bg: '#fef2f2',  border: '#fecaca' },
-  severe:   { dot: '#ea580c', text: '#ea580c', bg: '#fff7ed',  border: '#fed7aa' },
-  moderate: { dot: '#d97706', text: '#b45309', bg: '#fffbeb',  border: '#fde68a' },
-  minor:    { dot: '#16a34a', text: '#15803d', bg: '#f0fdf4',  border: '#bbf7d0' },
+// bg/border use CSS vars — only dot color is hardcoded per severity
+const SEV_COLORS: Record<string, { dot: string }> = {
+  extreme:  { dot: 'var(--sev-extreme)' },
+  severe:   { dot: 'var(--sev-severe)' },
+  moderate: { dot: 'var(--sev-moderate)' },
+  minor:    { dot: 'var(--sev-minor)' },
 };
 
 const FEATURES = [
-  { icon: '🛡', title: 'Verified Sources',   desc: 'Every alert is tagged: NWS, FEMA, .gov feeds get an Official badge. Community sources are clearly marked.' },
-  { icon: '📡', title: 'Real-Time Updates',  desc: 'Alerts refresh every 2 minutes. Severity, freshness, and expiry are always current.' },
-  { icon: '📴', title: 'Works Offline',      desc: 'Service Worker + IndexedDB. Download a region package and stay informed even without internet.' },
-  { icon: '♿', title: 'Fully Accessible',   desc: 'WCAG 2.2 AA. Keyboard navigation, screen reader support, high contrast mode, 400% zoom.' },
-  { icon: '🔒', title: 'Privacy First',      desc: 'Your location stays on your device. We round coordinates to ±1km and never log GPS data.' },
-  { icon: '⚡', title: 'Crisis Mode',         desc: 'A sub-100KB text-only view that loads on 2G connections when every second counts.' },
+  { icon: 'VFD', title: 'Verified Sources',   desc: 'NWS, FEMA, and .gov feeds are tagged Official. Community sources are always clearly marked.' },
+  { icon: 'RT',  title: 'Real-Time Updates',  desc: 'Alerts refresh every 2 minutes. Severity, freshness, and expiry are always current.' },
+  { icon: 'OFL', title: 'Works Offline',      desc: 'Service Worker + IndexedDB. Download a region and stay informed without internet.' },
+  { icon: 'A11', title: 'Fully Accessible',   desc: 'WCAG 2.2 AA — keyboard navigation, screen reader support, 400% zoom compliance.' },
+  { icon: 'PVT', title: 'Privacy First',      desc: 'Location stays on your device. Coordinates rounded to ±1km, never logged.' },
+  { icon: 'CRS', title: 'Crisis Mode',        desc: 'Sub-100KB text-only view loads on 2G when every second counts.' },
 ];
 
 export default function Home() {
@@ -162,17 +163,17 @@ export default function Home() {
                 <div key={i} style={{
                   display: 'flex', alignItems: 'center', gap: 10,
                   padding: '10px 12px', borderRadius: 'var(--radius-sm)',
-                  borderLeft: `3px solid ${c.dot}`,
                   marginBottom: i < MOCK_ALERTS.length - 1 ? 4 : 0,
                   background: 'var(--surface-1)',
-                  border: `1px solid ${c.border}`,
-                  borderLeftWidth: 3,
+                  border: '1px solid var(--border)',
+                  borderLeft: `3px solid ${c.dot}`,
                 }}>
                   <span style={{
-                    fontSize: '0.62rem', fontWeight: 800, color: c.text,
-                    background: c.bg, padding: '2px 6px',
+                    fontSize: '0.62rem', fontWeight: 800,
+                    color: 'var(--text-muted)',
+                    background: 'var(--surface-2)', padding: '2px 6px',
                     borderRadius: 'var(--radius-full)', whiteSpace: 'nowrap', flexShrink: 0,
-                    letterSpacing: '0.04em',
+                    letterSpacing: '0.04em', border: '1px solid var(--border)',
                   }}>
                     {a.label}
                   </span>
@@ -238,10 +239,13 @@ export default function Home() {
             {FEATURES.map((f, i) => (
               <div key={i} className="ga-feature-card">
                 <div style={{
-                  width: 40, height: 40, borderRadius: 'var(--radius-sm)',
-                  background: 'var(--accent-subtle)',
+                  width: 44, height: 44, borderRadius: 'var(--radius-sm)',
+                  background: 'var(--surface-2)',
+                  border: '1px solid var(--border)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '1.3rem', marginBottom: 14,
+                  fontSize: '0.62rem', fontWeight: 800, letterSpacing: '0.04em',
+                  color: 'var(--accent)', fontFamily: 'var(--font-geist-mono), monospace',
+                  marginBottom: 14, flexShrink: 0,
                 }}>
                   {f.icon}
                 </div>
