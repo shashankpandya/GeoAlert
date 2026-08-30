@@ -1,62 +1,47 @@
-﻿import sys
+import sys
 import os
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 
-# Add backend/ to sys.path so app.* imports work
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from app.config import settings
-from app.database import Base  # noqa: F401 — registers all ORM models
-import app.models.models  # noqa: F401 — ensure models are imported
+from app.database import Base
+import app.models.models  # noqa: F401
 
 config = context.config
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Convert asyncpg URL to psycopg2 for Alembic (sync driver required)
-sync_url = (
-    settings.DATABASE_URL
-    .replace("postgresql+asyncpg://", "postgresql://")
-    .replace("?ssl=require", "")
-)
-config.set_main_option("sqlalchemy.url", sync_url)
+# Use the sync URL (psycopg2) for Alembic migrations
+sync_url = settings.get_sync_url()
+config.set_main_option('sqlalchemy.url', sync_url)
+print(f'[Alembic] Using DB: {sync_url[:60]}...')
 
 target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:
-    url = config.get_main_option("sqlalchemy.url")
-    context.configure(
-        url=url,
-        target_metadata=target_metadata,
-        literal_binds=True,
-        dialect_opts={"paramstyle": "named"},
-    )
+    url = config.get_main_option('sqlalchemy.url')
+    context.configure(url=url, target_metadata=target_metadata, literal_binds=True, dialect_opts={'paramstyle': 'named'})
     with context.begin_transaction():
         context.run_migrations()
 
 
 def run_migrations_online() -> None:
-    # For Neon, add SSL connect_args
     connect_args = {}
-    if "neon.tech" in settings.DATABASE_URL:
-        connect_args["sslmode"] = "require"
-
+    if settings.NEON_MODE:
+        connect_args['sslmode'] = 'require'
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
+        prefix='sqlalchemy.',
         poolclass=pool.NullPool,
         connect_args=connect_args,
     )
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection,
-            target_metadata=target_metadata,
-            compare_type=True,
-        )
+        context.configure(connection=connection, target_metadata=target_metadata, compare_type=True)
         with context.begin_transaction():
             context.run_migrations()
 
