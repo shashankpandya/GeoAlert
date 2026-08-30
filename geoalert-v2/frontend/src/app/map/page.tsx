@@ -206,13 +206,15 @@ export default function MapPage() {
         {fetchError && (
           <div role="alert" style={{
             margin: '0 16px 10px', padding: '10px 12px',
-            background: 'var(--sev-extreme-bg)', color: 'var(--sev-extreme-text)',
+            background: 'var(--sev-moderate-bg)', color: 'var(--sev-moderate-text)',
             borderRadius: 'var(--radius-sm)', fontSize: '0.78rem',
-            border: '1px solid var(--sev-extreme)',
+            border: '1px solid var(--sev-moderate)',
           }}>
-            <strong>Backend offline</strong>
+            <strong>Live data unavailable</strong>
             <p style={{ marginTop: 3, opacity: 0.85 }}>
-              Run: <code style={{ fontSize: '0.7rem' }}>uvicorn app.main:app --port 8000</code>
+              {process.env.NODE_ENV === 'production'
+                ? 'Backend may be waking up — try again in 30s.'
+                : 'Run: uvicorn app.main:app --port 8000'}
             </p>
           </div>
         )}
@@ -229,7 +231,9 @@ export default function MapPage() {
             </div>
           ) : filteredAlerts.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '40px 16px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-              {allAlerts.length === 0 ? 'No active alerts' : `No ${severityFilter} alerts`}
+              {allAlerts.length === 0 
+                ? (fetchError ? 'No connection to backend' : 'No active alerts — database is empty') 
+                : `No ${severityFilter} alerts`}
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>

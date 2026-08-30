@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const IS_PROD = process.env.NODE_ENV === 'production';
 
 interface DashboardData {
   timestamp: string;
@@ -20,17 +21,25 @@ interface DashboardData {
   systemStatus: string;
 }
 
+const ALERT_STAT_CONFIG = [
+  { key: 'total',    label: 'Total',    color: 'var(--accent)' },
+  { key: 'extreme',  label: 'Extreme',  color: 'var(--sev-extreme)' },
+  { key: 'severe',   label: 'Severe',   color: 'var(--sev-severe)' },
+  { key: 'moderate', label: 'Moderate', color: 'var(--sev-moderate)' },
+  { key: 'minor',    label: 'Minor',    color: 'var(--sev-minor)' },
+] as const;
+
 export default function AdminPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [health, setHealth] = useState<{ status: string } | null>(null);
+  const [health, setHealth] = useState<Record<string, unknown> | null>(null);
 
-  const loadData = async () => {
-    // Always check health first
+  const loadData = useCallback(async () => {
     try {
       const hr = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(5000) });
       if (hr.ok) setHealth(await hr.json());
+      else setHealth(null);
     } catch {
       setHealth(null);
     }
@@ -45,119 +54,235 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadData();
     const iv = setInterval(loadData, 30000);
     return () => clearInterval(iv);
-  }, []);
+  }, [loadData]);
 
-  const totalAlerts = data ? Object.values(data.alertCountsBySeverity).reduce((s, n) => s + n, 0) : 0;
-
-  const cardStyle: React.CSSProperties = {
-    background: '#161b22',
-    border: '1px solid #30363d',
-    borderRadius: '8px',
-    padding: '16px',
-  };
+  const totalAlerts = data
+    ? Object.values(data.alertCountsBySeverity).reduce((s, n) => s + n, 0)
+    : 0;
 
   return (
-    <main role="main" style={{ minHeight: '100vh', background: '#0d1117', color: '#e6edf3', fontFamily: 'system-ui, sans-serif', padding: '24px 20px' }}>
-      <header role="banner" style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <Link href="/" style={{ color: '#8b949e', textDecoration: 'none', fontSize: '0.85rem' }}>&#8592; Home</Link>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 700 }}>Admin Dashboard</h1>
+    <main
+      role="main"
+      style={{
+        minHeight: 'calc(100vh - 56px)',
+        background: 'var(--bg)',
+        color: 'var(--text-primary)',
+        padding: '24px 20px',
+        maxWidth: 1100,
+        margin: '0 auto',
+      }}
+    >
+      {/* Page header */}
+      <header style={{ marginBottom: 28, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em' }}>
+            Admin Dashboard
+          </h1>
+          <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: 3 }}>
+            {loading
+              ? 'Loading...'
+              : data
+              ? `Last updated ${new Date(data.timestamp).toLocaleTimeString()}`
+              : 'Auto-refreshes every 30 seconds'}
+          </p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ fontSize: '0.8rem', color: '#8b949e' }}>
-            {loading ? 'Loading...' : data ? `Updated ${new Date(data.timestamp).toLocaleTimeString()}` : 'Auto-refresh every 30s'}
-          </span>
-          <button onClick={loadData} style={{ background: '#21262d', color: '#8b949e', border: '1px solid #30363d', borderRadius: '6px', padding: '6px 12px', cursor: 'pointer', fontSize: '0.85rem' }}>
-            Refresh
-          </button>
-        </div>
+        <button
+          onClick={loadData}
+          className="ga-btn ga-btn-ghost"
+          aria-label="Refresh dashboard"
+        >
+          ↻ Refresh
+        </button>
       </header>
 
-      {/* API Status */}
-      <section aria-labelledby="api-status" style={{ ...cardStyle, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <h2 id="api-status" style={{ fontSize: '0.9rem', fontWeight: 700, margin: 0 }}>API Status</h2>
+      {/* API Status card */}
+      <section
+        aria-labelledby="api-status-heading"
+        className="ga-card"
+        style={{ padding: '14px 18px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}
+      >
+        <h2 id="api-status-heading" style={{ fontSize: '0.85rem', fontWeight: 700, margin: 0, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          API Status
+        </h2>
         <span style={{
-          background: health ? '#14532d' : '#450a0a',
-          color: health ? '#86efac' : '#fca5a5',
-          padding: '2px 10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 700
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+          padding: '3px 12px', borderRadius: 'var(--radius-full)',
+          fontSize: '0.8rem', fontWeight: 700,
+          background: health ? 'var(--sev-minor-bg)' : 'var(--sev-extreme-bg)',
+          color: health ? 'var(--sev-minor-text)' : 'var(--sev-extreme-text)',
+          border: `1px solid ${health ? 'var(--sev-minor)' : 'var(--sev-extreme)'}`,
         }}>
-          {health ? `\u2713 Online (${API_BASE})` : `\u2715 Offline \u2014 start backend on port 8000`}
+          <span style={{ width: 7, height: 7, borderRadius: '50%', background: health ? 'var(--status-online)' : 'var(--status-offline)', flexShrink: 0 }} />
+          {health ? `Online — ${API_BASE}` : 'Offline'}
         </span>
-        {health && <span style={{ fontSize: '0.8rem', color: '#8b949e' }}>v{(health as Record<string, unknown>).version as string ?? '?'}</span>}
+        {health && (
+          <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+            v{(health.version as string) ?? '?'}
+          </span>
+        )}
+        {health && (
+          <a
+            href={`${API_BASE}/api/docs`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ fontSize: '0.78rem', color: 'var(--accent)', marginLeft: 'auto', minHeight: 'unset' }}
+          >
+            API Docs →
+          </a>
+        )}
       </section>
 
+      {/* Error banner */}
       {error && (
-        <div role="alert" style={{ ...cardStyle, marginBottom: '16px', borderColor: '#7f1d1d', background: '#450a0a', color: '#fca5a5', fontSize: '0.9rem' }}>
-          <strong>Dashboard error:</strong> {error}
-          {!health && <p style={{ marginTop: '8px', fontSize: '0.85rem', color: '#f87171' }}>
-            Start the backend: <code style={{ background: '#7f1d1d', padding: '2px 6px', borderRadius: '4px' }}>cd backend &amp;&amp; uvicorn app.main:app --reload --port 8000</code>
-          </p>}
+        <div
+          role="alert"
+          className="ga-card"
+          style={{
+            marginBottom: 16, padding: '14px 18px',
+            borderColor: 'var(--sev-extreme)',
+            background: 'var(--sev-extreme-bg)',
+            color: 'var(--sev-extreme-text)',
+            fontSize: '0.88rem',
+          }}
+        >
+          <strong>Could not load dashboard data</strong>
+          <p style={{ marginTop: 6, opacity: 0.85 }}>
+            {IS_PROD
+              ? 'The backend may be starting up (Render free tier wakes after ~30s of inactivity). Try refreshing in a moment.'
+              : `Run: cd backend && uvicorn app.main:app --reload`}
+          </p>
         </div>
       )}
 
-      {/* Alert counts */}
-      {data && (
-        <>
-          <section aria-labelledby="alert-counts" style={{ marginBottom: '16px' }}>
-            <h2 id="alert-counts" style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '12px' }}>Active Alerts</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
-              {[
-                { label: 'Total', count: totalAlerts, color: '#58a6ff' },
-                { label: 'Extreme', count: data.alertCountsBySeverity.extreme ?? 0, color: '#f85149' },
-                { label: 'Severe', count: data.alertCountsBySeverity.severe ?? 0, color: '#fb923c' },
-                { label: 'Moderate', count: data.alertCountsBySeverity.moderate ?? 0, color: '#fbbf24' },
-                { label: 'Minor', count: data.alertCountsBySeverity.minor ?? 0, color: '#4ade80' },
-              ].map(item => (
-                <div key={item.label} style={{ ...cardStyle, textAlign: 'center' }}>
-                  <div style={{ fontSize: '1.8rem', fontWeight: 700, color: item.color }}>{item.count}</div>
-                  <div style={{ fontSize: '0.8rem', color: '#8b949e', marginTop: '4px' }}>{item.label}</div>
+      {/* Alert count grid */}
+      <section aria-labelledby="alerts-heading" style={{ marginBottom: 24 }}>
+        <h2
+          id="alerts-heading"
+          style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}
+        >
+          Active Alerts
+        </h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 10 }}>
+          {ALERT_STAT_CONFIG.map(({ key, label, color }) => {
+            const count = key === 'total'
+              ? totalAlerts
+              : (data?.alertCountsBySeverity[key] ?? 0);
+            return (
+              <div
+                key={key}
+                className="ga-card"
+                style={{ padding: '16px 12px', textAlign: 'center' }}
+              >
+                <div style={{ fontSize: '2rem', fontWeight: 800, color, lineHeight: 1, letterSpacing: '-0.03em' }}>
+                  {loading ? '—' : count}
                 </div>
-              ))}
-            </div>
-          </section>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 5, textTransform: 'capitalize', fontWeight: 600 }}>
+                  {label}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
 
-          <section aria-labelledby="providers-heading">
-            <h2 id="providers-heading" style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '12px' }}>
-              Alert Providers ({data.providers.length})
-            </h2>
-            {data.providers.length === 0 ? (
-              <div style={{ ...cardStyle, color: '#8b949e', textAlign: 'center', padding: '32px' }}>
-                No providers configured yet. Use <code>/api/sources/classify</code> to add sources.
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gap: '10px' }}>
-                {data.providers.map(p => (
-                  <div key={p.source_id} style={{ ...cardStyle, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{p.name}</div>
-                      <div style={{ fontSize: '0.8rem', color: '#8b949e', marginTop: '2px' }}>
-                        {p.classification} &middot; Last: {p.last_ingested_at ? new Date(p.last_ingested_at).toLocaleString() : 'Never'}
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center', fontSize: '0.85rem' }}>
-                      <span style={{ color: p.uptime_percentage >= 95 ? '#4ade80' : p.uptime_percentage >= 80 ? '#fbbf24' : '#f85149' }}>
-                        {p.uptime_percentage.toFixed(1)}% uptime
-                      </span>
-                      <span style={{ color: p.error_rate > 10 ? '#f85149' : '#8b949e' }}>
-                        {p.error_rate.toFixed(1)}% errors
-                      </span>
-                      <span style={{ background: p.status === 'active' ? '#14532d' : '#450a0a', color: p.status === 'active' ? '#86efac' : '#fca5a5', padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem' }}>
-                        {p.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-        </>
+      {/* System status */}
+      {data && (
+        <section aria-labelledby="system-heading" style={{ marginBottom: 24 }}>
+          <h2
+            id="system-heading"
+            style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}
+          >
+            System
+          </h2>
+          <div className="ga-card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{
+              width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+              background: data.systemStatus === 'operational' ? 'var(--status-online)' : 'var(--status-warning)',
+              boxShadow: data.systemStatus === 'operational' ? '0 0 0 3px rgba(22,163,74,.15)' : 'none',
+            }} />
+            <span style={{ fontWeight: 600, textTransform: 'capitalize', fontSize: '0.9rem' }}>
+              {data.systemStatus}
+            </span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginLeft: 'auto' }}>
+              {new Date(data.timestamp).toLocaleString()}
+            </span>
+          </div>
+        </section>
       )}
+
+      {/* Providers */}
+      <section aria-labelledby="providers-heading">
+        <h2
+          id="providers-heading"
+          style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}
+        >
+          Alert Providers {data && `(${data.providers.length})`}
+        </h2>
+
+        {loading ? (
+          <div className="ga-card" style={{ padding: '32px', textAlign: 'center', color: 'var(--text-muted)' }}>
+            <span className="ga-spinner" style={{ margin: '0 auto 8px', display: 'block', width: 24, height: 24, borderWidth: 3 }} />
+            Loading providers...
+          </div>
+        ) : !data || data.providers.length === 0 ? (
+          <div className="ga-card" style={{ padding: '32px 24px', textAlign: 'center' }}>
+            <div style={{ fontSize: '2rem', marginBottom: 12 }}>📡</div>
+            <p style={{ fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>No providers configured</p>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 16 }}>
+              Add alert sources to start ingesting real emergency data.
+            </p>
+            <a
+              href={`${API_BASE}/api/docs#/sources/classify_source_api_sources_classify_post`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ga-btn ga-btn-primary"
+              style={{ textDecoration: 'none' }}
+            >
+              Add a source via API →
+            </a>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {data.providers.map(p => (
+              <div
+                key={p.source_id}
+                className="ga-card"
+                style={{ padding: '14px 18px', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}
+              >
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{p.name}</div>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 2 }}>
+                    {p.classification === 'official' ? '✓ Official' : '○ Community'}
+                    {' · '}
+                    Last: {p.last_ingested_at ? new Date(p.last_ingested_at).toLocaleString() : 'Never'}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center', fontSize: '0.82rem', flexWrap: 'wrap' }}>
+                  <span style={{ color: p.uptime_percentage >= 95 ? 'var(--status-online)' : p.uptime_percentage >= 80 ? 'var(--sev-moderate)' : 'var(--status-offline)' }}>
+                    {p.uptime_percentage.toFixed(1)}% uptime
+                  </span>
+                  <span style={{ color: p.error_rate > 10 ? 'var(--status-offline)' : 'var(--text-muted)' }}>
+                    {p.error_rate.toFixed(1)}% errors
+                  </span>
+                  <span style={{
+                    padding: '2px 10px', borderRadius: 'var(--radius-full)', fontSize: '0.72rem', fontWeight: 700,
+                    background: p.status === 'active' ? 'var(--sev-minor-bg)' : 'var(--sev-extreme-bg)',
+                    color: p.status === 'active' ? 'var(--sev-minor-text)' : 'var(--sev-extreme-text)',
+                  }}>
+                    {p.status}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
     </main>
   );
 }

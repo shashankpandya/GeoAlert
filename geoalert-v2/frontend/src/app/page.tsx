@@ -203,7 +203,7 @@ export default function Home() {
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           }}>
             <span style={{ fontSize: '0.72rem', color: 'var(--text-subtle)' }}>
-              Sample data — connect backend for live alerts
+              Sample preview — visit Live Map for real-time data
             </span>
             <Link href="/map" style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--accent)', minHeight: 'unset' }}>
               View map →
