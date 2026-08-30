@@ -1,8 +1,5 @@
 {
-  "buildCommand": "cd geoalert-v2/frontend && npm install && npm run build",
-  "outputDirectory": "geoalert-v2/frontend/.next",
-  "installCommand": "cd geoalert-v2/frontend && npm install",
-  "framework": "nextjs",
+  "rootDirectory": "geoalert-v2/frontend",
   "headers": [
     {
       "source": "/classic/:path*",
