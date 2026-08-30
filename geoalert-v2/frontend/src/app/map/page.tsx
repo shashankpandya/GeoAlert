@@ -170,7 +170,11 @@ export default function MapPage() {
               aria-label="Save offline package"
               title="Download offline package"
             >
-              {downloadingOffline ? <span className="ga-spinner" /> : offlineDownloaded ? '✓' : '⬇'}
+              {downloadingOffline ? <span className="ga-spinner" /> : offlineDownloaded ? (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              )}
             </button>
           </div>
 
@@ -180,23 +184,13 @@ export default function MapPage() {
               <button
                 key={sev}
                 onClick={() => setSeverityFilter(sev)}
-                className="ga-btn"
-                style={{
-                  height: 26, padding: '0 8px', fontSize: '0.72rem', fontWeight: 600,
-                  minHeight: 'unset',
-                  background: severityFilter === sev ? 'var(--accent)' : 'var(--surface-2)',
-                  color: severityFilter === sev ? '#fff' : 'var(--text-muted)',
-                  border: `1px solid ${severityFilter === sev ? 'var(--accent)' : 'var(--border)'}`,
-                  borderRadius: 'var(--radius-full)',
-                }}
+                className={`ga-filter-pill${severityFilter === sev ? ' active' : ''}`}
                 aria-pressed={severityFilter === sev}
               >
-                {sev === 'all' ? `All (${allAlerts.length})` : (
-                  <>
-                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: SEV_DOT[sev], display: 'inline-block' }} />
-                    {' '}{sev} {countBySeverity[sev] ? `(${countBySeverity[sev]})` : ''}
-                  </>
+                {sev !== 'all' && (
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: SEV_DOT[sev], flexShrink: 0, display: 'inline-block' }} />
                 )}
+                {sev === 'all' ? `All (${allAlerts.length})` : `${sev}${countBySeverity[sev] ? ` (${countBySeverity[sev]})` : ''}`}
               </button>
             ))}
           </div>
@@ -264,8 +258,9 @@ export default function MapPage() {
                       {alert.event}
                     </div>
                     {alert.areas?.length > 0 && (
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 3 }}>
-                        📍 {alert.areas.slice(0, 2).join(', ')}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 3 }}>
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        {alert.areas.slice(0, 2).join(', ')}
                       </div>
                     )}
                     {alert.source && (

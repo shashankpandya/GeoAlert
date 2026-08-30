@@ -380,3 +380,90 @@ button, a, input, select, textarea { min-height: 36px; }
 @media (max-width: 640px) {
   #main-content { overflow-x: hidden; }
 }
+
+/* ── Nav hover states (missing) ───────────────────── */
+.ga-nav a:hover,
+.ga-nav a:focus-visible {
+  color: var(--text-primary) !important;
+  background: var(--surface-2) !important;
+}
+
+/* ── Feature card — use surface-1 not bg ──────────── */
+/* bg === section background → cards invisible */
+.ga-feature-card {
+  background: var(--surface-1) !important;
+}
+
+/* ── Fix: global min-height on button breaks small controls */
+/* Override the global rule for explicit sm/xs sizes */
+.ga-btn-sm,
+.ga-filter-pill {
+  min-height: unset !important;
+}
+
+/* ── Filter pills (map sidebar severity tabs) ──────── */
+.ga-filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+  min-height: unset;
+}
+.ga-filter-pill:hover { border-color: var(--border-strong); color: var(--text-primary); }
+.ga-filter-pill.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* ── Selection ─────────────────────────────────────── */
+::selection {
+  background: var(--accent-subtle);
+  color: var(--accent-text);
+}
+
+/* ── Custom scrollbar (webkit) ─────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--text-subtle); }
+
+/* ── Placeholder ───────────────────────────────────── */
+::placeholder { color: var(--text-subtle); }
+
+/* ── Section label (reusable uppercase section header) */
+.ga-section-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+/* ── Status badge ──────────────────────────────────── */
+.ga-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.ga-status-online  { background: var(--sev-minor-bg);    color: var(--sev-minor-text);    border: 1px solid var(--sev-minor); }
+.ga-status-offline { background: var(--sev-extreme-bg);  color: var(--sev-extreme-text);  border: 1px solid var(--sev-extreme); }
+.ga-status-warning { background: var(--sev-moderate-bg); color: var(--sev-moderate-text); border: 1px solid var(--sev-moderate); }

@@ -21,13 +21,52 @@ const SEV_COLORS: Record<string, { dot: string }> = {
   minor:    { dot: 'var(--sev-minor)' },
 };
 
+// Proper SVG icons for feature cards — no emoji, no abbreviations
+const FEATURE_ICONS = {
+  verified: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      <polyline points="9 12 11 14 15 10"/>
+    </svg>
+  ),
+  realtime: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <polyline points="12 6 12 12 16 14"/>
+    </svg>
+  ),
+  offline: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.91a16 16 0 006.18 6.18l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+    </svg>
+  ),
+  accessible: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+  ),
+  privacy: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+      <path d="M7 11V7a5 5 0 0110 0v4"/>
+    </svg>
+  ),
+  crisis: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+    </svg>
+  ),
+} as const;
+
 const FEATURES = [
-  { icon: 'VFD', title: 'Verified Sources',   desc: 'NWS, FEMA, and .gov feeds are tagged Official. Community sources are always clearly marked.' },
-  { icon: 'RT',  title: 'Real-Time Updates',  desc: 'Alerts refresh every 2 minutes. Severity, freshness, and expiry are always current.' },
-  { icon: 'OFL', title: 'Works Offline',      desc: 'Service Worker + IndexedDB. Download a region and stay informed without internet.' },
-  { icon: 'A11', title: 'Fully Accessible',   desc: 'WCAG 2.2 AA — keyboard navigation, screen reader support, 400% zoom compliance.' },
-  { icon: 'PVT', title: 'Privacy First',      desc: 'Location stays on your device. Coordinates rounded to ±1km, never logged.' },
-  { icon: 'CRS', title: 'Crisis Mode',        desc: 'Sub-100KB text-only view loads on 2G when every second counts.' },
+  { iconKey: 'verified'   as const, title: 'Verified Sources',   desc: 'NWS, FEMA, and .gov feeds are tagged Official. Community sources are always clearly marked.' },
+  { iconKey: 'realtime'   as const, title: 'Real-Time Updates',  desc: 'Alerts refresh every 2 minutes. Severity, freshness, and expiry are always current.' },
+  { iconKey: 'offline'    as const, title: 'Works Offline',      desc: 'Service Worker + IndexedDB. Download a region and stay informed without internet.' },
+  { iconKey: 'accessible' as const, title: 'Fully Accessible',   desc: 'WCAG 2.2 AA — keyboard navigation, screen reader support, 400% zoom compliance.' },
+  { iconKey: 'privacy'    as const, title: 'Privacy First',      desc: 'Location stays on your device. Coordinates rounded to ±1km, never logged.' },
+  { iconKey: 'crisis'     as const, title: 'Crisis Mode',        desc: 'Sub-100KB text-only view loads on 2G when every second counts.' },
 ];
 
 export default function Home() {
@@ -181,9 +220,10 @@ export default function Home() {
                     <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {a.event}
                     </div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 1 }}>
-                      📍 {a.area}
-                    </div>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 1 }}>
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                      {a.area}
+                    </span>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0, gap: 2 }}>
                     <span style={{ fontSize: '0.68rem', color: 'var(--text-subtle)' }}>{a.age}</span>
@@ -239,15 +279,14 @@ export default function Home() {
             {FEATURES.map((f, i) => (
               <div key={i} className="ga-feature-card">
                 <div style={{
-                  width: 44, height: 44, borderRadius: 'var(--radius-sm)',
-                  background: 'var(--surface-2)',
-                  border: '1px solid var(--border)',
+                  width: 44, height: 44, borderRadius: 'var(--radius-md)',
+                  background: 'var(--accent-subtle)',
+                  border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '0.62rem', fontWeight: 800, letterSpacing: '0.04em',
-                  color: 'var(--accent)', fontFamily: 'var(--font-geist-mono), monospace',
+                  color: 'var(--accent)',
                   marginBottom: 14, flexShrink: 0,
                 }}>
-                  {f.icon}
+                  {FEATURE_ICONS[f.iconKey]}
                 </div>
                 <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)', marginBottom: 6 }}>
                   {f.title}
@@ -322,7 +361,8 @@ export default function Home() {
             border: '1px solid var(--border)', borderRadius: 'var(--radius-full)',
             fontSize: '0.75rem', background: 'var(--surface-2)', textDecoration: 'none',
           }}>
-            🌐 Classic
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+            Classic
           </a>
         </div>
       </footer>

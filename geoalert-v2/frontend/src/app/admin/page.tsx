@@ -97,7 +97,8 @@ export default function AdminPage() {
           className="ga-btn ga-btn-ghost"
           aria-label="Refresh dashboard"
         >
-          ↻ Refresh
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+          Refresh
         </button>
       </header>
 
@@ -232,7 +233,14 @@ export default function AdminPage() {
           </div>
         ) : !data || data.providers.length === 0 ? (
           <div className="ga-card" style={{ padding: '32px 24px', textAlign: 'center' }}>
-            <div style={{ fontSize: '2rem', marginBottom: 12 }}>📡</div>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16, color: 'var(--text-subtle)' }}>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M5 12.55a11 11 0 0114.08 0"/>
+              <path d="M1.42 9a16 16 0 0121.16 0"/>
+              <path d="M8.53 16.11a6 6 0 016.95 0"/>
+              <line x1="12" y1="20" x2="12.01" y2="20"/>
+            </svg>
+          </div>
             <p style={{ fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>No providers configured</p>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 16 }}>
               Add alert sources to start ingesting real emergency data.

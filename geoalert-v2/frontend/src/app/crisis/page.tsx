@@ -244,7 +244,10 @@ export default async function CrisisPage({ searchParams }: PageProps) {
                     flexWrap: 'wrap', gap: 6,
                     fontSize: '0.75rem', color: 'var(--text-muted)',
                   }}>
-                    <span>📍 {a.areas.join(', ')}</span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                      {a.areas.join(', ')}
+                    </span>
                     <span>Expires {new Date(a.expires).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
                 </article>
