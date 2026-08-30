@@ -1,6 +1,21 @@
 {
-  "rewrites": [
-    { "source": "/", "destination": "/EarthPulse.html" },
-    { "source": "/(.*)", "destination": "/EarthPulse.html" }
+  "buildCommand": "cd geoalert-v2/frontend && npm install && npm run build",
+  "outputDirectory": "geoalert-v2/frontend/.next",
+  "installCommand": "cd geoalert-v2/frontend && npm install",
+  "framework": "nextjs",
+  "headers": [
+    {
+      "source": "/classic/:path*",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
+    }
   ]
 }
